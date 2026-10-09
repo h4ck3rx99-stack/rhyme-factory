@@ -1,8 +1,33 @@
 # Rhyme Factory
 
-Automated, original nursery-rhyme videos: idea -> song -> storyboard -> pictures -> singing -> video ->
-subtitles -> thumbnail -> QC -> YouTube -> Google Sheets log. The full explanation is in the build guide doc;
-this file is the short version.
+**A fully automated pipeline that writes, sings, animates, and publishes original nursery-rhyme videos to YouTube — hands-off, on a schedule.** Built for the channel *Puddlehop Lane*, it runs entirely on a local Windows machine: [n8n](https://n8n.io/) orchestrates the flow, Gemini writes the song, and a local Python helper renders images (SDXL), vocals (ACE-Step), and the final video (FFmpeg). Every run is logged to Google Sheets and uploaded to YouTube.
+
+```
+idea → song → storyboard → pictures → singing → video → subtitles → thumbnail → QC → YouTube → Sheets log
+```
+
+## Features
+
+- **End-to-end automation** — one scheduled trigger produces a finished, uploaded video with no manual steps.
+- **Local-first rendering** — images, singing, and video are generated on your own GPU; only the lyrics call hits a cloud API.
+- **Resilient AI stage** — a single sub-workflow wraps each AI call with a Gemini → Ollama fallback, JSON-schema validation, and up to 3 retries.
+- **Brand as code** — `helper/brand.json` is the single source of truth for the world, cast bibles, art style, and playlists.
+- **Built-in QC** — media checks catch broken renders before anything publishes.
+- **Analytics loop** — a weekly workflow pulls stats and re-weights future topics.
+- **Error handling** — failed runs are flagged automatically in Google Sheets via a dedicated error workflow.
+- **Safe by default** — "Made for Kids" is enforced, and uploads stay in a manual outbox until you flip the switch.
+
+## Architecture
+
+| Layer | Role |
+| --- | --- |
+| **n8n** (`n8n/*.json`) | Orchestration: the 45-node main pipeline, the AI sub-workflow, error handling, and analytics. |
+| **Python helper** (`helper/rhyme_helper.py`) | Local render service n8n calls over HTTP — images, singing, video, thumbnail, and media QC. |
+| **Gemini** | Writes the song and storyboard (with an optional local Ollama fallback). |
+| **Google Sheets** | The run log, topic weights, character registry, and error ledger. |
+| **YouTube Data API** | Publishing and playlist placement. |
+
+> The full, click-by-click build guide lives in a separate doc; the rest of this file is the short version.
 
 ## What is in this folder
 
