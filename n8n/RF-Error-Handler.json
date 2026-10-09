@@ -1,0 +1,273 @@
+{
+  "name": "RF - Error Handler",
+  "nodes": [
+    {
+      "id": "c3cf230b-c993-495f-884d-634c8f42a7c1",
+      "name": "Note 0",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        -240
+      ],
+      "parameters": {
+        "content": "## RF - Error Handler\nSet this as the *Error workflow* of RF - Main (Workflow -> Settings).\nMarks the video row as failed (matched by execution id) and appends to the Errors tab.\nRuns only for production (scheduled/active) executions, not for manual test runs.",
+        "height": 180,
+        "width": 560,
+        "color": 7
+      }
+    },
+    {
+      "id": "f1fcf463-7879-40ac-b6e7-cf496d509b0e",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "ae07cadf-e612-40d9-b879-d8511fc9c93e",
+      "name": "Format Error",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// FORMAT ERROR — turns the Error Trigger payload into one row for Google Sheets.\nconst e = $input.first().json;\nconst message = String(e.execution?.error?.message || e.trigger?.error?.message || 'unknown error');\nconst id = message.match(/NR-\\d{8}-[A-Z0-9]{4}/);\nreturn [{\n  json: {\n    at: new Date().toISOString(),\n    workflow: e.workflow?.name || '',\n    exec_id: String(e.execution?.id ?? ''),\n    video_id: id ? id[0] : '',\n    failed_node: e.execution?.lastNodeExecuted || '',\n    error: message.slice(0, 1000),\n    execution_url: e.execution?.url || '',\n  },\n}];\n"
+      }
+    },
+    {
+      "id": "14d6a9f2-2f0a-4c63-9670-b6ac61f7fae2",
+      "name": "Mark Video Failed",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        480,
+        0
+      ],
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "PASTE_YOUR_GOOGLE_SHEET_ID_HERE",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Videos",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "exec_id": "={{ $json.exec_id }}",
+            "status": "failed",
+            "error": "={{ $json.error }}",
+            "failed_node": "={{ $json.failed_node }}"
+          },
+          "matchingColumns": [
+            "exec_id"
+          ],
+          "schema": [
+            {
+              "id": "exec_id",
+              "displayName": "exec_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "error",
+              "displayName": "error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "failed_node",
+              "displayName": "failed_node",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "61268fde-897f-43fb-bb33-2762510cfc3f",
+      "name": "Log Error",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        720,
+        0
+      ],
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "PASTE_YOUR_GOOGLE_SHEET_ID_HERE",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Errors",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "at": "={{ $('Format Error').first().json.at }}",
+            "workflow": "={{ $('Format Error').first().json.workflow }}",
+            "exec_id": "={{ $('Format Error').first().json.exec_id }}",
+            "video_id": "={{ $('Format Error').first().json.video_id }}",
+            "failed_node": "={{ $('Format Error').first().json.failed_node }}",
+            "error": "={{ $('Format Error').first().json.error }}",
+            "execution_url": "={{ $('Format Error').first().json.execution_url }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "at",
+              "displayName": "at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "workflow",
+              "displayName": "workflow",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "exec_id",
+              "displayName": "exec_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "video_id",
+              "displayName": "video_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "failed_node",
+              "displayName": "failed_node",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "error",
+              "displayName": "error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "execution_url",
+              "displayName": "execution_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Format Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Error": {
+      "main": [
+        [
+          {
+            "node": "Mark Video Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Video Failed": {
+      "main": [
+        [
+          {
+            "node": "Log Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Kolkata",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "active": false
+}

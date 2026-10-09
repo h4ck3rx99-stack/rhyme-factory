@@ -1,0 +1,118 @@
+{
+  "cfg": {
+    "channel_name": "Puddlehop Lane",
+    "sheet_id": "PASTE_YOUR_GOOGLE_SHEET_ID_HERE",
+    "helper_url": "http://127.0.0.1:8765",
+    "gemini_model": "gemini-2.5-flash",
+    "ollama_url": "http://127.0.0.1:11434",
+    "ollama_model": "qwen3:8b",
+    "upload_mode": "manual_outbox",
+    "publish_time_utc": "12:00",
+    "publish_days_utc": [
+      1,
+      3,
+      5
+    ],
+    "playlist_id": "",
+    "region_code": "IN",
+    "category_id": "27",
+    "language": "en",
+    "voice": "af_heart",
+    "target_duration_s": 150,
+    "min_duration_s": 100,
+    "max_duration_s": 320,
+    "min_intelligibility": 0.55,
+    "recurring_star_probability": 0.5,
+    "max_poll": 60,
+    "style_bible": {
+      "positive": "flat 2D children's picture-book cartoon, thick clean outlines, sunny pastel colors, soft lighting, cute rounded shapes",
+      "negative": "text, letters, words, numbers, watermark, logo, signature, photorealistic, 3d render, scary, dark, gloomy, horror, blood, weapon, nsfw, nudity, extra limbs, extra fingers, deformed, blurry, low quality, jpeg artifacts, realistic human child"
+    },
+    "categories": [
+      "animals",
+      "counting and numbers",
+      "colors and shapes",
+      "opposites and sizes",
+      "daily routines",
+      "feelings and kindness",
+      "family and friends",
+      "nature and weather",
+      "bugs and garden",
+      "vehicles and transport",
+      "healthy food",
+      "alphabet and first words",
+      "body and movement",
+      "space and sky",
+      "ocean animals",
+      "music and instruments"
+    ],
+    "channel_handle": "@PuddlehopLane",
+    "world": "Puddlehop Lane: a curvy cobblestone lane with round pastel houses, a duck pond with lily pads, a big oak tree with a rope swing, a little red bridge, a park with a yellow slide, and a cosy bakery on the corner",
+    "cast": [
+      {
+        "char_id": "pip_duckling",
+        "name": "Pip",
+        "species": "duckling",
+        "short_tag": "small yellow duckling in sky-blue rain boots",
+        "visual_prompt": "small round yellow duckling, orange beak and feet, big shiny black eyes, sky-blue rain boots, red polka-dot bandana",
+        "personality": "curious, brave and giggly; jumps into every adventure first"
+      },
+      {
+        "char_id": "momo_turtle",
+        "name": "Momo",
+        "species": "turtle",
+        "short_tag": "little green turtle in a striped scarf",
+        "visual_prompt": "little green turtle, orange-spotted shell, red and white striped scarf, round blue glasses, friendly smile",
+        "personality": "careful and kind; loves counting and helping friends"
+      },
+      {
+        "char_id": "bix_bunny",
+        "name": "Bix",
+        "species": "bunny",
+        "short_tag": "lavender bunny in yellow star overalls",
+        "visual_prompt": "small lavender bunny, one floppy ear, big feet, yellow overalls with a white star pocket, rosy cheeks",
+        "personality": "bouncy and silly; turns everything into a dance"
+      },
+      {
+        "char_id": "tula_elephant",
+        "name": "Tula",
+        "species": "elephant",
+        "short_tag": "little pink elephant in a teal raincoat",
+        "visual_prompt": "little pastel-pink elephant, big round ears, teal raincoat, tiny orange drum on a strap, sparkly eyes",
+        "personality": "gentle and musical; hums softly and calms everyone down"
+      }
+    ],
+    "category_playlist": {
+      "animals": "Animal Songs on Puddlehop Lane",
+      "counting and numbers": "Counting Songs for Kids",
+      "colors and shapes": "Colors, Shapes & Opposites",
+      "opposites and sizes": "Colors, Shapes & Opposites",
+      "daily routines": "Bath, Bedtime & Routine Songs",
+      "feelings and kindness": "Feelings & Friendship Songs",
+      "family and friends": "Feelings & Friendship Songs",
+      "nature and weather": "Nature, Weather & Seasons",
+      "bugs and garden": "Nature, Weather & Seasons",
+      "vehicles and transport": "Things That Go",
+      "healthy food": "Yummy Food Songs",
+      "alphabet and first words": "ABC & First Words",
+      "body and movement": "Move & Dance Songs",
+      "space and sky": "Adventure Songs",
+      "ocean animals": "Adventure Songs",
+      "music and instruments": "Move & Dance Songs"
+    },
+    "playlist_ids": {
+      "Animal Songs on Puddlehop Lane": "",
+      "Counting Songs for Kids": "",
+      "Colors, Shapes & Opposites": "",
+      "Bath, Bedtime & Routine Songs": "",
+      "Feelings & Friendship Songs": "",
+      "Nature, Weather & Seasons": "",
+      "Things That Go": "",
+      "Yummy Food Songs": "",
+      "ABC & First Words": "",
+      "Move & Dance Songs": "",
+      "Adventure Songs": ""
+    },
+    "title_card_s": 3.0
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "video_id": "NR-20261007-TEST",
+  "channel_name": "Tiny Tune Town",
+  "title": "Pip the Duckling Counts the Puddles",
+  "style_bible": {
+    "positive": "flat 2D children's picture-book cartoon, thick clean outlines, bright pastel colors, soft lighting, cute rounded shapes",
+    "negative": "text, letters, watermark, logo, photorealistic, 3d render, scary, dark, horror, blood, weapon, nsfw, extra limbs, deformed, blurry, low quality, realistic human child"
+  },
+  "characters": [
+    {
+      "char_id": "pip_duckling",
+      "name": "Pip",
+      "species": "duckling",
+      "short_tag": "small yellow duckling in shiny blue rain boots",
+      "visual_prompt": "small round yellow duckling, orange beak, big shiny black eyes, shiny sky-blue rain boots, red polka-dot umbrella",
+      "seed": 120511
+    },
+    {
+      "char_id": "momo_turtle",
+      "name": "Momo",
+      "species": "turtle",
+      "short_tag": "little green turtle with a striped scarf",
+      "visual_prompt": "little green turtle, orange-spotted shell, red and white striped scarf, friendly smile",
+      "seed": 88123
+    }
+  ],
+  "song": {
+    "sections": [
+      {"section_id": "verse1", "type": "verse", "lines": ["Pitter-patter, drip, drop, drip,", "Out the door goes little Pip,", "Shiny boots of bright sky blue,", "Ready, steady, hop on through!"]},
+      {"section_id": "chorus1", "type": "chorus", "lines": ["Splash, splash, splish and splosh,", "Puddle jumping, oh my gosh!", "Count the puddles, one by one,", "Rainy days are so much fun!"]},
+      {"section_id": "verse2", "type": "verse", "lines": ["One big puddle by the tree,", "Pip jumps in and shouts, whee!", "Two small puddles by the gate,", "Momo Turtle calls, wait, wait!"]},
+      {"section_id": "chorus2", "type": "chorus", "lines": ["Splash, splash, splish and splosh,", "Puddle jumping, oh my gosh!", "Count the puddles, one by one,", "Rainy days are so much fun!"]},
+      {"section_id": "verse3", "type": "verse", "lines": ["Three round puddles in a row,", "Jump with Pip, now here we go!", "Hop and splash and laugh out loud,", "Look, the sun peeks through the cloud!"]},
+      {"section_id": "chorus3", "type": "chorus", "lines": ["Splash, splash, splish and splosh,", "Puddle jumping, oh my gosh!", "Count the puddles, one by one,", "Rainy days are so much fun!"]},
+      {"section_id": "outro", "type": "outro", "lines": ["Rain says bye and sun says hi,", "Rainbow colors fill the sky!"]}
+    ],
+    "music": {
+      "caption": "cheerful children's nursery rhyme, bright friendly female vocal, ukulele, glockenspiel, hand claps, bouncy",
+      "bpm": 108,
+      "key": "C Major",
+      "time_signature": "4",
+      "target_duration_s": 140
+    }
+  },
+  "voice": {
+    "hook_text": "Hello friends! It's raining! Let's count puddles with Pip!",
+    "outro_text": "Bye-bye, friends! Keep counting and see you next time!",
+    "voice": "af_heart"
+  },
+  "scenes": [
+    {"scene_id": 1, "lines": [0, 1], "char_ids": ["pip_duckling"], "camera": "zoom_in", "transition": "fade", "sfx": [{"name": "rain_light", "at": "start"}], "prompt": "flat 2D cartoon, small yellow duckling in shiny blue rain boots stepping out of a cozy red front door, light rain, village garden"},
+    {"scene_id": 2, "lines": [2, 3], "char_ids": ["pip_duckling"], "camera": "pan_right", "transition": "slideleft", "sfx": [], "prompt": "flat 2D cartoon, close-up of shiny sky-blue rain boots on a yellow duckling, raindrops, happy mood"},
+    {"scene_id": 3, "lines": [4, 5], "char_ids": ["pip_duckling"], "camera": "zoom_out", "transition": "circleopen", "sfx": [{"name": "splash", "at": "start"}], "prompt": "flat 2D cartoon, yellow duckling jumping into a puddle, big splash, water droplets, laughing"},
+    {"scene_id": 4, "lines": [6, 7], "char_ids": ["pip_duckling"], "camera": "static", "transition": "fade", "sfx": [], "prompt": "flat 2D cartoon, yellow duckling counting on wing, three puddles in a green park, rain"},
+    {"scene_id": 5, "lines": [8, 9], "char_ids": ["pip_duckling"], "camera": "zoom_in", "transition": "wipeleft", "sfx": [{"name": "splash", "at": "middle"}], "prompt": "flat 2D cartoon, yellow duckling jumping into a big puddle under an apple tree, wide shot"},
+    {"scene_id": 6, "lines": [10, 11], "char_ids": ["momo_turtle", "pip_duckling"], "camera": "pan_left", "transition": "slideright", "sfx": [{"name": "boing", "at": "start"}], "prompt": "flat 2D cartoon, little green turtle with a striped scarf waving by a wooden garden gate, yellow duckling near two small puddles"},
+    {"scene_id": 7, "lines": [12, 13], "char_ids": ["pip_duckling", "momo_turtle"], "camera": "zoom_out", "transition": "circleopen", "sfx": [{"name": "splash", "at": "start"}], "prompt": "flat 2D cartoon, yellow duckling and green turtle splashing together in a puddle, giggling"},
+    {"scene_id": 8, "lines": [14, 15], "char_ids": ["pip_duckling", "momo_turtle"], "camera": "pan_up", "transition": "fade", "sfx": [], "prompt": "flat 2D cartoon, duckling and turtle counting puddles together, gentle rain, colorful flowers"},
+    {"scene_id": 9, "lines": [16, 17], "char_ids": ["pip_duckling"], "camera": "pan_right", "transition": "smoothleft", "sfx": [], "prompt": "flat 2D cartoon, three round puddles in a row on a garden path, yellow duckling ready to hop"},
+    {"scene_id": 10, "lines": [18, 19], "char_ids": ["pip_duckling", "momo_turtle"], "camera": "zoom_in", "transition": "dissolve", "sfx": [{"name": "chime", "at": "middle"}], "prompt": "flat 2D cartoon, sun peeking through fluffy clouds, duckling and turtle laughing and looking up"},
+    {"scene_id": 11, "lines": [20, 21], "char_ids": ["pip_duckling", "momo_turtle"], "camera": "zoom_out", "transition": "radial", "sfx": [{"name": "splash", "at": "start"}], "prompt": "flat 2D cartoon, duckling and turtle doing a big happy puddle jump, sparkling water"},
+    {"scene_id": 12, "lines": [22, 23], "char_ids": ["pip_duckling"], "camera": "static", "transition": "fade", "sfx": [], "prompt": "flat 2D cartoon, yellow duckling holding red polka-dot umbrella, dancing in the last drops of rain"},
+    {"scene_id": 13, "lines": [24, 25], "char_ids": ["pip_duckling", "momo_turtle"], "camera": "pan_up", "transition": "circleopen", "sfx": [{"name": "chime", "at": "start"}], "prompt": "flat 2D cartoon, bright rainbow over the village, duckling and turtle waving, sunny sky"}
+  ],
+  "title_card": {"prompt": "flat 2D cartoon, yellow duckling in blue rain boots waving hello under a red polka-dot umbrella, rainy village, empty sky at top", "char_ids": ["pip_duckling"]},
+  "outro_card": {"prompt": "flat 2D cartoon, duckling and turtle waving goodbye under a rainbow, sunny garden, empty sky at top", "char_ids": ["pip_duckling", "momo_turtle"]},
+  "thumbnail": {"prompt": "flat 2D cartoon, big close-up of a happy yellow duckling in blue rain boots mid-splash, plain bright sky-blue background, character on the right side", "char_ids": ["pip_duckling"], "text": "Puddle Splash!", "text_side": "left"},
+  "render": {"width": 1920, "height": 1080, "fps": 30, "transition_s": 0.5, "title_card_s": 4.0, "outro_s": 5.0, "min_duration_s": 90, "max_duration_s": 330},
+  "qc": {"min_intelligibility": 0.55, "max_song_attempts": 3, "max_image_attempts": 2}
+}

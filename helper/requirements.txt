@@ -1,0 +1,11 @@
+# Install PyTorch FIRST with the CUDA 12.8 build (required for RTX 50-series / Blackwell):
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
+numpy
+pillow
+diffusers>=0.32
+transformers>=4.46
+accelerate
+safetensors
+huggingface_hub
+kokoro>=0.9.4
+faster-whisper>=1.1

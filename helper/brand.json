@@ -1,0 +1,71 @@
+{
+  "channel_name": "Puddlehop Lane",
+  "handle": "@PuddlehopLane",
+  "handle_fallbacks": ["@PuddlehopLaneSongs", "@PuddlehopLaneKids"],
+  "tagline": "Original sing-along songs for little ones",
+  "description": "Welcome to Puddlehop Lane! Pip the duckling and friends sing brand-new, original songs for toddlers and preschoolers (ages 2-6). Every song teaches something small and real - counting, colours, animal sounds, kind words, bath time, bedtime - with a gentle story, simple words and a chorus little ones can sing after one listen.\n\nNew songs every Monday, Wednesday and Friday.\n\nOur songs, lyrics and characters are original. We make them with the help of AI tools and check every video for safety and quality before it is published.\n\nFor grown-ups: sing along, copy the actions, and pause to count or name things together.",
+  "keywords": "puddlehop lane, nursery rhymes, kids songs, songs for toddlers, preschool songs, sing along songs, learning songs, counting songs, animal songs, original nursery rhymes",
+  "world": "Puddlehop Lane: a curvy cobblestone lane with round pastel houses, a duck pond with lily pads, a big oak tree with a rope swing, a little red bridge, a park with a yellow slide, and a cosy bakery on the corner",
+  "style_bible": {
+    "positive": "flat 2D children's picture-book cartoon, thick clean outlines, sunny pastel colors, soft lighting, cute rounded shapes",
+    "negative": "text, letters, words, numbers, watermark, logo, signature, photorealistic, 3d render, scary, dark, gloomy, horror, blood, weapon, nsfw, nudity, extra limbs, extra fingers, deformed, blurry, low quality, jpeg artifacts, realistic human child"
+  },
+  "cast": [
+    {
+      "char_id": "pip_duckling",
+      "name": "Pip",
+      "species": "duckling",
+      "short_tag": "small yellow duckling in sky-blue rain boots",
+      "visual_prompt": "small round yellow duckling, orange beak and feet, big shiny black eyes, sky-blue rain boots, red polka-dot bandana",
+      "personality": "curious, brave and giggly; jumps into every adventure first"
+    },
+    {
+      "char_id": "momo_turtle",
+      "name": "Momo",
+      "species": "turtle",
+      "short_tag": "little green turtle in a striped scarf",
+      "visual_prompt": "little green turtle, orange-spotted shell, red and white striped scarf, round blue glasses, friendly smile",
+      "personality": "careful and kind; loves counting and helping friends"
+    },
+    {
+      "char_id": "bix_bunny",
+      "name": "Bix",
+      "species": "bunny",
+      "short_tag": "lavender bunny in yellow star overalls",
+      "visual_prompt": "small lavender bunny, one floppy ear, big feet, yellow overalls with a white star pocket, rosy cheeks",
+      "personality": "bouncy and silly; turns everything into a dance"
+    },
+    {
+      "char_id": "tula_elephant",
+      "name": "Tula",
+      "species": "elephant",
+      "short_tag": "little pink elephant in a teal raincoat",
+      "visual_prompt": "little pastel-pink elephant, big round ears, teal raincoat, tiny orange drum on a strap, sparkly eyes",
+      "personality": "gentle and musical; hums softly and calms everyone down"
+    }
+  ],
+  "playlists": {
+    "animals": "Animal Songs on Puddlehop Lane",
+    "counting and numbers": "Counting Songs for Kids",
+    "colors and shapes": "Colors, Shapes & Opposites",
+    "opposites and sizes": "Colors, Shapes & Opposites",
+    "daily routines": "Bath, Bedtime & Routine Songs",
+    "feelings and kindness": "Feelings & Friendship Songs",
+    "family and friends": "Feelings & Friendship Songs",
+    "nature and weather": "Nature, Weather & Seasons",
+    "bugs and garden": "Nature, Weather & Seasons",
+    "vehicles and transport": "Things That Go",
+    "healthy food": "Yummy Food Songs",
+    "alphabet and first words": "ABC & First Words",
+    "body and movement": "Move & Dance Songs",
+    "space and sky": "Adventure Songs",
+    "ocean animals": "Adventure Songs",
+    "music and instruments": "Move & Dance Songs"
+  },
+  "art": {
+    "avatar_prompt": "close-up portrait of a small round yellow duckling, orange beak, big shiny black eyes, red polka-dot bandana, happy wave, centered, plain sunny yellow background, simple composition",
+    "banner_prompt": "wide panorama of a curvy cobblestone lane with round pastel houses, a duck pond with lily pads, a big oak tree with a rope swing, a little red bridge, sunny blue sky with fluffy clouds, no characters",
+    "jingle_caption": "4-second cheerful children's jingle, ukulele and glockenspiel, rising three-note melody, hand clap at the end, bright and happy",
+    "outro_bed_caption": "6-second gentle children's outro, soft ukulele and glockenspiel, warm and happy, slow fade"
+  }
+}

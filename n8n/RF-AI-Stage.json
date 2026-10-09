@@ -1,0 +1,261 @@
+{
+  "name": "RF - AI Stage",
+  "nodes": [
+    {
+      "id": "0eb85ce2-30d4-40ca-a299-601433b33409",
+      "name": "Note 0",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        -260
+      ],
+      "parameters": {
+        "content": "## RF - AI Stage\nCalled by the main workflow once per stage (idea, song, storyboard, metadata, qc).\nGemini (free tier) first; if it errors after 3 tries -> local Ollama.\nInvalid JSON -> up to 3 attempts with the validator's error fed back. Prompts + JSON schemas live in **Prepare**.",
+        "height": 200,
+        "width": 620,
+        "color": 7
+      }
+    },
+    {
+      "id": "4cb5d0cc-b821-462c-a586-f45660fd6e3e",
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "stage"
+            },
+            {
+              "name": "pkg",
+              "type": "object"
+            },
+            {
+              "name": "feedback"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "8147d63b-91a3-4cef-9977-ce877ad97e85",
+      "name": "Prepare",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// PREPARE — builds prompts, JSON schema and request bodies for ONE AI stage.\n// First run: input comes from \"When Executed by Another Workflow\" = { stage, pkg, feedback }.\n// Retry runs: input comes from \"Route\" output 1 = { ctx, error } of the failed attempt.\nconst input = $input.first().json;\nconst base = input.ctx ?? { stage: input.stage, pkg: input.pkg ?? {}, feedback: input.feedback ?? '' };\nconst stage = base.stage;\nconst pkg = base.pkg;\nconst cfg = pkg.cfg ?? {};\nconst attempt = $runIndex; // 0, 1, 2 — this node runs again on every retry\nlet feedback = base.feedback || '';\nif (input.error) {\n  feedback += `\\nYour previous answer was rejected by the validator: ${input.error}\\nReturn ONLY valid JSON that matches the schema exactly.`;\n}\n\n// ---------- schema helpers (Gemini responseSchema dialect) ----------\nconst STR = (extra = {}) => ({ type: 'STRING', ...extra });\nconst INT = (extra = {}) => ({ type: 'INTEGER', ...extra });\nconst BOOL = () => ({ type: 'BOOLEAN' });\nconst ARR = (items, extra = {}) => ({ type: 'ARRAY', items, ...extra });\nconst OBJ = (properties, required = Object.keys(properties)) => ({ type: 'OBJECT', properties, required });\n\nconst CAMERA = ['zoom_in', 'zoom_out', 'pan_left', 'pan_right', 'pan_up', 'pan_down', 'static'];\nconst TRANSITION = ['fade', 'dissolve', 'slideleft', 'slideright', 'wipeleft', 'wiperight', 'circleopen', 'smoothleft', 'smoothright', 'radial'];\nconst SFX = ['splash', 'pop', 'boing', 'chime', 'whoosh', 'giggle', 'clap', 'bell', 'footsteps', 'bird_chirp', 'rain_light', 'wind_soft', 'car_horn_toy', 'train_toot', 'animal_moo', 'animal_quack', 'animal_roar_cute', 'drum_roll', 'ding', 'snore'];\nconst categories = cfg.categories ?? ['animals'];\n\nconst SCHEMAS = {\n  idea: OBJ({\n    title: STR(), category: STR({ enum: categories }), search_phrase: STR(), premise: STR(), learning_goal: STR(),\n    hook_line: STR(), rewatch_hook: STR(), setting: STR(),\n    mood: STR({ enum: ['bouncy', 'gentle', 'silly', 'adventurous', 'cozy', 'energetic'] }),\n    repetition_device: STR(),\n    main_character: OBJ({ reuse_star: BOOL(), name: STR(), species: STR(), one_line: STR() }),\n    supporting_character: OBJ({ name: STR(), species: STR() }),\n    concept_keywords: ARR(STR(), { minItems: 3, maxItems: 6 }),\n    why_kids_love_it: STR(),\n  }, ['title', 'category', 'search_phrase', 'premise', 'learning_goal', 'hook_line', 'rewatch_hook', 'setting', 'mood', 'repetition_device', 'main_character', 'concept_keywords']),\n\n  song: OBJ({\n    title: STR(), logline: STR(),\n    story_beats: ARR(OBJ({ beat: INT(), summary: STR() }), { minItems: 3, maxItems: 6 }),\n    sections: ARR(OBJ({\n      section_id: STR(),\n      type: STR({ enum: ['intro', 'verse', 'pre_chorus', 'chorus', 'bridge', 'outro'] }),\n      lines: ARR(STR(), { minItems: 2, maxItems: 8 }),\n      actions: STR(),\n    }, ['section_id', 'type', 'lines']), { minItems: 4, maxItems: 10 }),\n    characters: ARR(OBJ({\n      char_id: STR(), name: STR(), species: STR(), role: STR({ enum: ['main', 'friend'] }),\n      personality: STR(), visual_prompt: STR(), short_tag: STR(),\n      colors: ARR(STR()), clothing: STR(), distinctive_features: STR(),\n    }, ['char_id', 'name', 'species', 'role', 'personality', 'visual_prompt', 'short_tag']), { minItems: 1, maxItems: 3 }),\n    music: OBJ({\n      caption: STR(), bpm: INT(),\n      key: STR({ enum: ['C Major', 'D Major', 'E Major', 'F Major', 'G Major', 'A Major', 'Bb Major'] }),\n      time_signature: STR({ enum: ['4', '3'] }), mood: STR(),\n    }),\n    voice: OBJ({ hook_text: STR(), outro_text: STR() }),\n    vocabulary_words: ARR(STR()), moral: STR(),\n  }, ['title', 'logline', 'story_beats', 'sections', 'characters', 'music', 'voice']),\n\n  storyboard: OBJ({\n    scenes: ARR(OBJ({\n      scene_id: INT(), section_id: STR(), line_indices: ARR(INT(), { minItems: 1, maxItems: 3 }),\n      char_ids: ARR(STR(), { maxItems: 2 }), setting: STR(), action: STR(), expression: STR(),\n      framing: STR({ enum: ['wide shot', 'medium shot', 'close-up'] }),\n      camera: STR({ enum: CAMERA }), transition: STR({ enum: TRANSITION }),\n      sfx: ARR(OBJ({ name: STR({ enum: SFX }), at: STR({ enum: ['start', 'middle'] }) }), { maxItems: 1 }),\n    }, ['scene_id', 'section_id', 'line_indices', 'char_ids', 'setting', 'action', 'expression', 'framing', 'camera', 'transition']),\n    { minItems: 10, maxItems: 40 }),\n    title_card: OBJ({ setting: STR(), action: STR(), char_ids: ARR(STR()) }),\n    outro_card: OBJ({ setting: STR(), action: STR(), char_ids: ARR(STR()) }),\n    thumbnail: OBJ({\n      action: STR(), expression: STR(), background: STR(), char_ids: ARR(STR()),\n      text: STR(), text_side: STR({ enum: ['left', 'right'] }),\n    }),\n  }),\n\n  metadata: OBJ({\n    title: STR(), description: STR(),\n    tags: ARR(STR(), { minItems: 8, maxItems: 15 }),\n    hashtags: ARR(STR(), { maxItems: 3 }),\n  }),\n\n  qc: OBJ({\n    scores: OBJ({\n      originality: INT(), child_safety: INT(), age_appropriateness: INT(), grammar: INT(),\n      rhyme_and_meter: INT(), singability: INT(), story_coherence: INT(),\n      character_consistency: INT(), metadata_accuracy: INT(), kids_quality: INT(), algorithm_fit: INT(),\n    }),\n    issues: ARR(OBJ({\n      component: STR({ enum: ['song', 'storyboard', 'metadata'] }),\n      severity: STR({ enum: ['minor', 'major', 'blocker'] }),\n      problem: STR(), fix: STR(),\n    })),\n    resembles_existing_work: BOOL(), resembles_note: STR(),\n    verdict: STR({ enum: ['pass', 'revise_song', 'revise_storyboard', 'revise_metadata', 'reject'] }),\n    summary: STR(),\n  }, ['scores', 'issues', 'resembles_existing_work', 'verdict', 'summary']),\n};\n\n// ---------- prompts ----------\nconst channel = cfg.channel_name || 'our channel';\nconst world = cfg.world || '';\nconst cast = cfg.cast || [];\nconst YT = `HOW YOUTUBE TREATS KIDS' VIDEOS (apply this honestly; never game it)\n- Recommendations follow what viewers actually watch and enjoy: watch time, re-watches, likes and dislikes, satisfaction surveys, and the channel's reputation for quality. Made for Kids videos have no comments and no notification bell, so almost every view comes from recommendations beside other kids' videos, YouTube Kids, playlists and search.\n- YouTube's quality principles for kids' content reward videos that are age-appropriate, enriching, engaging and inspiring: kindness, friendship, self-care routines, curiosity and learning, creativity and imagination, a clear story with a resolution, and a wide range of people and places. They punish (limited ads or removal from the Partner Program) heavily promotional content, dangerous or unkind behaviour, titles or thumbnails that trick kids, jumbled stories or unclear audio, sensational or bizarre content, and familiar characters in odd or risky situations. Spam rules also forbid keyword stuffing in titles, descriptions and tags.\n- The Partner Program does not pay for mass-produced, templated or repetitive videos (the inauthentic content policy), including AI-made videos built from a generic template and picture slideshows with little story. Every video must be materially different from the channel's earlier ones: a new story, a new learning goal, new places and new things to watch. A shared intro and outro is fine.\n- Search ranks by relevance, engagement and quality. Parents search plain phrases such as \"counting song\", \"bath time song\" or \"animal sounds for toddlers\".\n- Attention is won in the first seconds: the hook comes immediately, the chorus arrives early, and something new happens on screen every few seconds.\n- Children re-watch songs they can join in with: repetition, simple actions, call-and-response, sound words and characters they already know.`;\nconst SYSTEM = {\n  idea: `You are the head writer of \"${channel}\", a YouTube channel of ORIGINAL sing-along songs for children aged 2-6. You invent fresh song concepts that parents are happy to play and toddlers want to repeat.\nRules:\n- Every concept is original. Never base an idea on an existing nursery rhyme, children's song, book, TV show, film, game or YouTube channel (for example: no \"Twinkle Twinkle\", \"Wheels on the Bus\", \"Baby Shark\", \"Old MacDonald\", CoComelon, Bluey, Peppa Pig, Disney, Pixar, Pokemon).\n- Never use a trademarked or copyrighted character, brand or catchphrase.\n- One clear, age-appropriate learning goal (counting, colours, shapes, opposites, animal sounds, feelings, kindness, routines, nature, first words).\n- Child safety first: nothing scary, violent, sad-ending, gross-out or romantic; no dangerous behaviour a toddler could copy (fire, knives, medicine, electricity, roads, water without a grown-up, climbing high places); no sweets as rewards; no gender or cultural stereotypes; never mock anyone.\n- A strong repetition device makes it memorable (counting up or down, call-and-response, cumulative list, an action repeated every chorus).\n- Characters are friendly animals, vehicles, foods with faces or invented creatures - never real people.\n- Title: max 60 characters, descriptive and honest. No clickbait, no ALL CAPS, no emojis.\n- search_phrase: the short phrase (2-5 words) a parent would really type into YouTube to find this song, e.g. \"counting song for toddlers\", \"brush teeth song\", \"farm animal sounds song\". It must honestly describe the song and appear naturally in the title.\n- rewatch_hook: one sentence on why a 3-year-old will want to watch it again (the action, the call-and-response, the funny sound).\n- The channel's world is ${world}. Most stories happen there; short trips (seaside, farm, space) are fine.\n${YT}\nReturn JSON only.`,\n\n  song: `You are an award-winning children's songwriter and picture-book author writing an ORIGINAL nursery rhyme for ages 2-6 for \"${channel}\".\nLYRICS\n- Brand-new lyrics only. Never copy, quote or closely paraphrase any existing song, rhyme or poem - not even one line. Avoid famous lines such as \"twinkle twinkle\", \"up above the world so high\", \"the wheels on the bus\", \"E-I-E-I-O\", \"row, row, row your boat\", \"if you're happy and you know it\", \"baby shark doo doo\".\n- Very simple words a 3-year-old knows. Present tense. 3-9 words per line, steady bouncy meter, lines of similar length.\n- Rhyme scheme AABB or ABCB with true rhymes (not near-rhymes).\n- Default structure (adapt only if it clearly serves the song): verse1, chorus, verse2, chorus, verse3, chorus, optional bridge, outro. 4 lines per verse and chorus; 2-4 lines for bridge and outro. section_id values are unique, e.g. verse1, chorus1, verse2, chorus2.\n- The chorus is identical every time (same lines, same order) and carries the hook and the repetition device.\n- Each verse moves the story on: beginning, small problem or discovery, happy resolution.\n- Include sound words (splash, boing, moo) and one simple action kids can do (clap, jump, wave) - describe it in \"actions\".\n- 18-36 lines in total; every line singable in about two bars; the whole song lasts about 2-3 minutes.\n- Win the first seconds: the very first sung line already contains the hook; no intro section, or an intro of at most 2 lines; the first chorus starts no later than the 5th line.\nSTORY\n- 3-6 story beats the verses follow. Warm, gentle humour, happy ending.\nCHARACTERS (the \"character bible\" used for EVERY picture - be precise, never vague)\n- 1-3 characters. char_id is lowercase_snake_case and unique.\n- visual_prompt: max 30 words of concrete visual facts: species, body shape, main colour, eyes, clothing with colours, one distinctive accessory. Example: \"small round golden lion cub, fluffy orange mane, big brown eyes, red scarf with white stars, tiny green backpack\".\n- short_tag: max 8 words with the most recognisable features. Example: \"golden lion cub in a red star scarf\".\n- No real people, no trademarked characters, no logos or text on clothing.\n- If a recurring star is provided, copy its name, species, visual_prompt and short_tag EXACTLY. You may add ONE friend from the recurring cast list (copy that bible exactly too) or invent a new friend.\nMUSIC (for an AI singer)\n- caption: comma-separated style tags, max 30 words, e.g. \"cheerful children's song, bright friendly female vocal, ukulele, glockenspiel, hand claps, bouncy, short intro\". Always include \"short intro\". Never name an existing artist or song.\n- bpm 90-126, a major key, time_signature \"4\" (\"3\" only for a lullaby waltz).\nVOICE\n- hook_text: what the narrator says over the 3-second title card, max 12 words, inviting kids to sing along.\n- outro_text: a warm goodbye, max 14 words, may recap the learning goal.\n${YT}\nReturn JSON only.`,\n\n  storyboard: `You are the storyboard artist of a children's animated sing-along. You turn lyrics into picture-book illustrations that will be animated with gentle camera moves.\nRules\n- Each scene illustrates 1-2 consecutive lyric lines of ONE section; line_indices are 0-based within that section. Cover every line of every section, in order.\n- Repeated choruses get NEW pictures (different angle, prop or action) so the video never feels like a looping slideshow.\n- 14-32 scenes in total. scene_id counts from 1.\n- char_ids: only ids from the character bible, at most 2 per scene; the main character appears in most scenes.\n- Do NOT describe what characters look like - their appearance is added automatically from the bible. Describe only: setting (max 15 words), action and pose (max 18 words), facial expression (max 6 words).\n- Keep locations consistent within the story, colourful, simple and uncluttered. No text, letters, signs or numerals in pictures - show counting with objects.\n- Visuals are safe and gentle: no danger, no scary shadows, no injuries, no long crying.\n- framing: vary wide shot / medium shot / close-up. camera: vary moves; pan_left or pan_right for movement, zoom_in for emotional moments, static rarely.\n- transition: mostly fade or dissolve; playful ones (slideleft, slideright, circleopen, wipeleft, radial) at section changes.\n- sfx: only from the allowed enum, max one per scene, only where the lyrics show that sound or action, in roughly one third of scenes; otherwise an empty array.\n- The first three scenes decide whether a child keeps watching: make them the most colourful, close and lively (big expressions, movement, a camera move on every one).\n- Home scenes use the channel's world: ${world}.\n- title_card: the main character greeting the viewer in the story's setting. outro_card: the characters waving goodbye.\n- thumbnail: ONE big, expressive main character (close-up, big happy emotion), plain bright background, no clutter, readable at phone size. text: 1-3 words (max 4), the honest hook of the song, no clickbait; it must show something that really happens in the video. The character goes on the side opposite text_side.\n${YT}\nReturn JSON only.`,\n\n  metadata: `You write YouTube metadata for \"${channel}\", a children's channel. Every video is Made for Kids. Be accurate, warm and useful to parents, and help the right parents find the song in search.\n- title: max 70 characters, format \"<Song name> | <search phrase in Title Case>\", e.g. \"Pip Counts the Puddles | Counting Song for Kids\". Put the words parents search for in the title naturally. No clickbait, no ALL CAPS words, no emojis, no misleading claims, no other channels' or brands' names.\n- description: 3 short paragraphs, 600-1400 characters in total. The first sentence (shown in search results) names the song, the search phrase and \"${channel}\" naturally. Then: (1) what happens in the song, (2) what children practise or learn, (3) a sing-along or movement tip for parents and carers. Plain text, no links, no hashtags, no timestamps (added automatically), no promises, no keyword lists.\n- tags: 10-15 short relevant phrases, max 30 characters each, lowercase; the search phrase first, then honest variations (topic, learning goal, character species, \"nursery rhymes\", \"kids songs\"). No brand or other channel names, nothing unrelated - keyword stuffing counts as low quality.\n- hashtags: max 3, without the # sign: one for the topic plus \"nurseryrhymes\" and \"kidssongs\".\n${YT}\nReturn JSON only.`,\n\n  qc: `You are a strict quality and safety reviewer for a children's YouTube channel (ages 2-6). You protect children, parents and the channel. Score each dimension 1-10 (10 = excellent).\n- originality: lyrics, title and concept are not copied or closely paraphrased from any existing song, rhyme, book or show. If you recognise any line from an existing work set resembles_existing_work=true and add a blocker issue.\n- child_safety: no danger a toddler could imitate; nothing scary, violent, sad, gross, romantic or rude; no stereotypes; no brand or copyrighted character. Anything unsafe is a blocker.\n- age_appropriateness: vocabulary and ideas suit ages 2-6.\n- grammar: correct English (sound words and playful repetition are fine).\n- rhyme_and_meter: true rhymes, even line lengths, singable.\n- singability: catchy chorus, repeated identically, easy to remember.\n- story_coherence: clear beginning, middle and end; storyboard matches lyrics.\n- character_consistency: storyboard uses the defined characters sensibly; no unknown characters.\n- metadata_accuracy: title, description and tags honestly match the content; no clickbait.\n- kids_quality: how well the package meets YouTube's quality principles for kids' content (enriching, positive behaviour, clear story, creativity, no sensational or bizarre elements, no keyword stuffing).\n- algorithm_fit: hook in the first sung line, chorus by line 5, lively first scenes, an honest searchable title built on the search phrase, a thumbnail readable at phone size, and a real reason to re-watch. Judge it as a viewer would, never by tricks.\n${YT}\nVerdict: \"pass\" only if every score >= 7 (algorithm_fit >= 6 is enough), child_safety >= 9 and there is no blocker. Otherwise choose the component whose fix matters most: revise_song (lyrics, characters, music), revise_storyboard (scenes, thumbnail), revise_metadata (title, description, tags). Use \"reject\" only if the concept itself is unsafe or unoriginal. Every issue needs a concrete, actionable fix.\nReturn JSON only.`,\n};\n\nconst list = (arr) => (arr && arr.length ? arr.map((x) => `- ${x}`).join('\\n') : '- (none yet)');\nconst plan = pkg.plan ?? {};\nconst star = plan.star;\nconst song = pkg.song ?? {};\nconst sectionsText = (song.sections ?? []).map((s) => `${s.section_id} (${s.type}):\\n` + s.lines.map((l, i) => `  ${i}: ${l}`).join('\\n')).join('\\n');\n\nconst USER = {\n  idea: () => `Category for this video: ${plan.category}\nMonth: ${plan.month} (${plan.season})\nMain character: ${star\n    ? `REUSE our recurring star ${star.name} the ${star.species} (${star.short_tag}). Set main_character.reuse_star=true and keep the name and species exactly.`\n    : `create a NEW main character (main_character.reuse_star=false). Do not use these species, they appeared too often recently: ${(plan.banned_species ?? []).join(', ') || 'none'}.`}\nTitles we already published - do not repeat or closely paraphrase any of them:\n${list(plan.avoid_titles)}\nConcept keywords we already used:\n${list(plan.avoid_concepts)}\nTopic performance on our channel (higher = viewers watched more; prefer strong topics but keep variety): ${plan.weights_note || 'not enough data yet'}\n${feedback}\nGive one concept.`,\n\n  song: () => `Write the song for this approved concept:\n${JSON.stringify(pkg.idea, null, 1)}\n${star && pkg.idea?.main_character?.reuse_star ? `Recurring star - copy exactly into characters: ${JSON.stringify(star)}` : ''}\nRecurring cast you may add ONE friend from (copy the bible exactly):\n${cast.filter((c) => !star || c.char_id !== star.char_id).map((c) => `- ${c.name} the ${c.species} (char_id ${c.char_id}): ${c.personality}. visual_prompt: ${c.visual_prompt}. short_tag: ${c.short_tag}`).join('\\n') || '- (none)'}\nSearch phrase to serve: ${pkg.idea?.search_phrase}\nTarget song length: about ${plan.target_duration_s ?? 150} seconds.\n${feedback}`,\n\n  storyboard: () => `Character bible (ids you may use):\n${(song.characters ?? []).map((c) => `- ${c.char_id}: ${c.name}, ${c.short_tag} (${c.role})`).join('\\n')}\nStory beats:\n${(song.story_beats ?? []).map((b) => `${b.beat}. ${b.summary}`).join('\\n')}\nSong sections (line_indices refer to the numbers shown):\n${sectionsText}\n${feedback}`,\n\n  metadata: () => `Channel: ${channel}\nSong title: ${song.title}\nSearch phrase: ${pkg.idea?.search_phrase}\nLogline: ${song.logline}\nLearning goal: ${pkg.idea?.learning_goal}\nWhy kids re-watch: ${pkg.idea?.rewatch_hook}\nThumbnail text: ${pkg.cards?.thumbnail?.text ?? ''}\nLyrics:\n${(song.sections ?? []).map((s) => s.lines.join('\\n')).join('\\n\\n')}\n${feedback}`,\n\n  qc: () => `Package to review:\n${JSON.stringify({\n    concept: { title: pkg.idea?.title, search_phrase: pkg.idea?.search_phrase, premise: pkg.idea?.premise, learning_goal: pkg.idea?.learning_goal, rewatch_hook: pkg.idea?.rewatch_hook },\n    song: { title: song.title, sections: song.sections, characters: song.characters, music_caption: song.music?.caption, voice: song.voice },\n    storyboard: (pkg.render_scenes ?? []).map((s) => ({ id: s.scene_id, lines: s.lines, chars: s.char_ids, action: s.action, setting: s.setting })),\n    thumbnail: pkg.cards?.thumbnail ? { text: pkg.cards.thumbnail.text, prompt: pkg.cards.thumbnail.prompt } : null,\n    metadata: pkg.metadata_final ?? pkg.metadata,\n  })}\n${feedback}`,\n};\n\nif (!SCHEMAS[stage]) throw new Error(`Unknown stage \"${stage}\"`);\nconst TEMPERATURE = { idea: 1.0, song: 0.9, storyboard: 0.7, metadata: 0.5, qc: 0.2 };\nconst system = SYSTEM[stage];\nconst user = USER[stage]().trim();\nconst schema = SCHEMAS[stage];\n\n// Ollama wants standard JSON Schema (lower-case types)\nconst toJsonSchema = (s) => JSON.parse(JSON.stringify(s).replace(/\"type\":\"([A-Z]+)\"/g, (_, t) => `\"type\":\"${t.toLowerCase()}\"`));\n\nreturn [{\n  json: {\n    ctx: { stage, pkg, feedback: base.feedback || '', attempt, model: cfg.gemini_model || 'gemini-2.5-flash', ollama_url: cfg.ollama_url || 'http://127.0.0.1:11434' },\n    schema,\n    gemini_body: {\n      systemInstruction: { parts: [{ text: system }] },\n      contents: [{ role: 'user', parts: [{ text: user }] }],\n      generationConfig: { temperature: TEMPERATURE[stage], maxOutputTokens: 16384, responseMimeType: 'application/json', responseSchema: schema },\n    },\n    ollama_body: {\n      model: cfg.ollama_model || 'qwen3:8b', stream: false, format: toJsonSchema(schema),\n      options: { temperature: TEMPERATURE[stage], num_ctx: 16384 },\n      messages: [{ role: 'system', content: system }, { role: 'user', content: user }],\n    },\n  },\n}];\n"
+      }
+    },
+    {
+      "id": "1cec306c-8bcd-40f8-a8a5-58e60af859ff",
+      "name": "Gemini",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        480,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "=https://generativelanguage.googleapis.com/v1beta/models/{{ $json.ctx.model }}:generateContent",
+        "options": {
+          "timeout": 180000
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.gemini_body) }}"
+      },
+      "onError": "continueErrorOutput",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "373efc52-ad27-4dc3-bd0f-1bb4e1f14bc6",
+      "name": "Ollama Fallback",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        160
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Prepare').last().json.ctx.ollama_url }}/api/chat",
+        "options": {
+          "timeout": 600000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($('Prepare').last().json.ollama_body) }}"
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "405ebc9e-231c-4775-8961-be9a02f79ef5",
+      "name": "Parse & Validate",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// PARSE & VALIDATE — accepts a Gemini or Ollama response, extracts JSON, checks it against the schema.\n// Never throws: it returns { ok, result | error } and a route_index for the \"Route\" switch.\nconst prep = $('Prepare').last().json; // the attempt that produced this response\nconst ctx = prep.ctx;\nconst res = $input.first().json;\nconst MAX_ATTEMPTS = 3;\n\nfunction validate(value, schema, path, out, mustFill = true) {\n  if (out.length > 12 || !schema) return out;\n  const t = schema.type;\n  const typeOk = {\n    STRING: typeof value === 'string',\n    INTEGER: Number.isInteger(value),\n    NUMBER: typeof value === 'number' && !Number.isNaN(value),\n    BOOLEAN: typeof value === 'boolean',\n    ARRAY: Array.isArray(value),\n    OBJECT: value !== null && typeof value === 'object' && !Array.isArray(value),\n  }[t];\n  if (!typeOk) { out.push(`${path} should be ${t.toLowerCase()}`); return out; }\n  if (t === 'STRING') {\n    if (mustFill && !value.trim()) out.push(`${path} is empty`);\n    if (schema.enum && (mustFill || value) && !schema.enum.includes(value)) out.push(`${path} must be one of ${schema.enum.join(', ')}`);\n  }\n  if (t === 'ARRAY') {\n    if (schema.minItems && value.length < schema.minItems) out.push(`${path} needs at least ${schema.minItems} items`);\n    if (schema.maxItems && value.length > schema.maxItems) out.push(`${path} allows at most ${schema.maxItems} items`);\n    value.forEach((v, i) => validate(v, schema.items, `${path}[${i}]`, out, mustFill));\n  }\n  if (t === 'OBJECT') {\n    for (const key of schema.required ?? []) {\n      if (mustFill && (value[key] === undefined || value[key] === null)) out.push(`${path}.${key} is missing`);\n    }\n    for (const [key, sub] of Object.entries(schema.properties ?? {})) {\n      const req = mustFill && (schema.required ?? []).includes(key);\n      if (value[key] !== undefined && value[key] !== null) validate(value[key], sub, `${path}.${key}`, out, req);\n    }\n  }\n  return out;\n}\n\nlet provider = 'gemini';\nlet error = '';\nlet result = null;\ntry {\n  let text;\n  if (res.candidates) {\n    const c = res.candidates[0];\n    if (!c?.content?.parts) throw new Error(`Gemini returned no content (finishReason: ${c?.finishReason ?? 'unknown'})`);\n    if (c.finishReason === 'MAX_TOKENS') throw new Error('the answer was cut off (MAX_TOKENS) - keep it shorter');\n    text = c.content.parts.filter((p) => !p.thought).map((p) => p.text ?? '').join('');\n  } else if (res.message) {\n    provider = 'ollama';\n    text = res.message.content ?? '';\n  } else if (res.error) {\n    provider = 'ollama';\n    const msg = typeof res.error === 'string' ? res.error : (res.error.message ?? JSON.stringify(res.error));\n    throw new Error(`Gemini failed (see the Gemini node's error output) and the local Ollama fallback also failed: ${msg}`);\n  } else if (res.promptFeedback?.blockReason) {\n    throw new Error(`Gemini blocked the prompt: ${res.promptFeedback.blockReason}`);\n  } else {\n    throw new Error(`unexpected response: ${JSON.stringify(res).slice(0, 200)}`);\n  }\n  text = text.trim().replace(/^```(?:json)?\\s*/i, '').replace(/```\\s*$/, '');\n  const a = text.indexOf('{');\n  const b = text.lastIndexOf('}');\n  if (a === -1 || b === -1) throw new Error('no JSON object in the answer');\n  result = JSON.parse(text.slice(a, b + 1));\n  const problems = validate(result, prep.schema, ctx.stage, []);\n  if (problems.length) throw new Error(problems.slice(0, 8).join('; '));\n} catch (e) {\n  error = String(e.message ?? e).slice(0, 700);\n}\n\nconst ok = !error;\nconst route_index = ok ? 0 : (ctx.attempt < MAX_ATTEMPTS - 1 ? 1 : 2);\nreturn [{ json: { ok, result, error, provider, attempt: ctx.attempt, route_index, ctx } }];\n"
+      }
+    },
+    {
+      "id": "09a9d384-f4d8-499f-8ac1-419812d8c25b",
+      "name": "Route",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1200,
+        0
+      ],
+      "parameters": {
+        "mode": "expression",
+        "numberOutputs": 3,
+        "output": "={{ $json.route_index }}"
+      }
+    },
+    {
+      "id": "342a7b60-9bd3-4a76-9583-129d94c60696",
+      "name": "Return",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        -120
+      ],
+      "parameters": {
+        "jsCode": "// RETURN — merges the validated AI output into the package and hands it back to the main workflow.\nconst { result, ctx, provider, attempt } = $input.first().json;\nconst pkg = JSON.parse(JSON.stringify(ctx.pkg));\npkg[ctx.stage] = result;\npkg.llm_log = [...(pkg.llm_log ?? []), { stage: ctx.stage, provider, attempt: attempt + 1, at: new Date().toISOString() }];\nreturn [{ json: { pkg } }];\n"
+      }
+    },
+    {
+      "id": "30fe0fab-88ed-4198-a620-2688d3fbf555",
+      "name": "Stop: AI Output Invalid",
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        1440,
+        160
+      ],
+      "parameters": {
+        "errorMessage": "={{ ($json.ctx.pkg.video_id || 'no-id') + ' | ' + $json.ctx.stage + ' stage: AI output invalid after ' + ($json.attempt + 1) + ' attempts: ' + $json.error }}"
+      }
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Prepare",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare": {
+      "main": [
+        [
+          {
+            "node": "Gemini",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini": {
+      "main": [
+        [
+          {
+            "node": "Parse & Validate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ollama Fallback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse & Validate": {
+      "main": [
+        [
+          {
+            "node": "Route",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Fallback": {
+      "main": [
+        [
+          {
+            "node": "Parse & Validate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route": {
+      "main": [
+        [
+          {
+            "node": "Return",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop: AI Output Invalid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Kolkata",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "active": false
+}

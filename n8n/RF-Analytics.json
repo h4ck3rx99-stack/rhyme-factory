@@ -1,0 +1,698 @@
+{
+  "name": "RF - Analytics (weekly)",
+  "nodes": [
+    {
+      "id": "fe0fd69c-63a1-4ab3-a604-4ddde6bc76d6",
+      "name": "Note 0",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        -260
+      ],
+      "parameters": {
+        "content": "## RF - Analytics\nEvery Monday: pulls views/likes/comments (YouTube Data API, 1 unit per 50 videos) and\nwatch time / retention / subs (YouTube Analytics API), writes them to Videos, and recomputes\nTopicWeights, which Plan Run uses to pick categories. Keep the category list identical to RF - Main.",
+        "height": 190,
+        "width": 640,
+        "color": 7
+      }
+    },
+    {
+      "id": "6579823d-f69a-4bd5-9fe8-0e2f9ebe8d45",
+      "name": "Weekly",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        -60
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 7 * * 1"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "78d4335d-d09a-4ed0-aec7-9a5aa9fd05a1",
+      "name": "Manual Run",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        120
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "7b75e75e-63fe-4db5-87bf-4185196d2ee2",
+      "name": "Analytics Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        220,
+        40
+      ],
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"cfg\": {\n    \"sheet_id\": \"PASTE_YOUR_GOOGLE_SHEET_ID_HERE\",\n    \"channel_start_date\": \"2026-10-01\",\n    \"categories\": [\n      \"animals\",\n      \"counting and numbers\",\n      \"colors and shapes\",\n      \"opposites and sizes\",\n      \"daily routines\",\n      \"feelings and kindness\",\n      \"family and friends\",\n      \"nature and weather\",\n      \"bugs and garden\",\n      \"vehicles and transport\",\n      \"healthy food\",\n      \"alphabet and first words\",\n      \"body and movement\",\n      \"space and sky\",\n      \"ocean animals\",\n      \"music and instruments\"\n    ]\n  }\n}",
+        "options": {}
+      }
+    },
+    {
+      "id": "b971ffa5-553a-4127-845f-26b724bde315",
+      "name": "Read Videos",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        440,
+        40
+      ],
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Analytics Config').first().json.cfg.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Videos",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "executeOnce": true,
+      "alwaysOutputData": true
+    },
+    {
+      "id": "7438e7ce-0b18-46f5-a103-42a6ad476735",
+      "name": "Read Weights",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        660,
+        40
+      ],
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Analytics Config').first().json.cfg.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "TopicWeights",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "executeOnce": true,
+      "alwaysOutputData": true
+    },
+    {
+      "id": "4a2904e0-1349-4b18-ae31-9403f38ed642",
+      "name": "Build Batches",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        40
+      ],
+      "parameters": {
+        "jsCode": "// BUILD BATCHES — YouTube IDs from the Videos sheet, 50 per videos.list call (1 quota unit each).\nconst cfg = $('Analytics Config').first().json.cfg;\nconst rows = $('Read Videos').all().map((i) => i.json).filter((r) => r.youtube_id && r.status !== 'failed');\nconst ids = [...new Set(rows.map((r) => String(r.youtube_id).trim()).filter((id) => /^[A-Za-z0-9_-]{11}$/.test(id)))];\nif (!ids.length) return []; // nothing published yet\nconst today = new Date().toISOString().slice(0, 10);\nconst out = [];\nfor (let i = 0; i < ids.length; i += 50) {\n  out.push({ json: { ids: ids.slice(i, i + 50).join(','), all_ids: ids.slice(-200).join(','), start_date: cfg.channel_start_date, end_date: today } });\n}\nreturn out;\n"
+      }
+    },
+    {
+      "id": "b9df6f40-fac6-45f8-9e52-9d382740b0b0",
+      "name": "Video Stats",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1100,
+        40
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://www.googleapis.com/youtube/v3/videos",
+        "options": {},
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleOAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "part",
+              "value": "statistics"
+            },
+            {
+              "name": "id",
+              "value": "={{ $json.ids }}"
+            },
+            {
+              "name": "maxResults",
+              "value": "50"
+            }
+          ]
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "6ea9dbef-1efa-4e36-b821-18729b32577d",
+      "name": "Analytics Report",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1320,
+        40
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://youtubeanalytics.googleapis.com/v2/reports",
+        "options": {},
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleOAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "ids",
+              "value": "channel==MINE"
+            },
+            {
+              "name": "startDate",
+              "value": "={{ $('Build Batches').first().json.start_date }}"
+            },
+            {
+              "name": "endDate",
+              "value": "={{ $('Build Batches').first().json.end_date }}"
+            },
+            {
+              "name": "metrics",
+              "value": "views,estimatedMinutesWatched,averageViewDuration,averageViewPercentage,subscribersGained"
+            },
+            {
+              "name": "dimensions",
+              "value": "video"
+            },
+            {
+              "name": "filters",
+              "value": "=video=={{ $('Build Batches').first().json.all_ids }}"
+            },
+            {
+              "name": "sort",
+              "value": "-views"
+            },
+            {
+              "name": "maxResults",
+              "value": "200"
+            }
+          ]
+        }
+      },
+      "executeOnce": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "e7e31091-03b2-4635-8438-97c6ce49cbf3",
+      "name": "CTR Report",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1540,
+        40
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://youtubeanalytics.googleapis.com/v2/reports",
+        "options": {},
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleOAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "ids",
+              "value": "channel==MINE"
+            },
+            {
+              "name": "startDate",
+              "value": "={{ $('Build Batches').first().json.start_date }}"
+            },
+            {
+              "name": "endDate",
+              "value": "={{ $('Build Batches').first().json.end_date }}"
+            },
+            {
+              "name": "metrics",
+              "value": "videoThumbnailImpressions,videoThumbnailImpressionsClickRate"
+            },
+            {
+              "name": "dimensions",
+              "value": "video"
+            },
+            {
+              "name": "filters",
+              "value": "=video=={{ $('Build Batches').first().json.all_ids }}"
+            },
+            {
+              "name": "sort",
+              "value": "-videoThumbnailImpressions"
+            },
+            {
+              "name": "maxResults",
+              "value": "200"
+            }
+          ]
+        }
+      },
+      "executeOnce": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "7902d64a-5941-4817-b93c-8e4dfcc88847",
+      "name": "Merge & Score",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        40
+      ],
+      "parameters": {
+        "jsCode": "// MERGE & SCORE — per-video stats rows + new category weights for topic selection.\n// Weight = 0.6 x (median views vs channel median) + 0.4 x (retention vs channel average),\n// smoothed 50/50 with the old weight, clamped to 0.5..2.5. Categories with < 2 mature videos get 1.2\n// (exploration bonus) so the channel keeps trying new things instead of collapsing onto one topic.\nconst cfg = $('Analytics Config').first().json.cfg;\nconst stats = {};\nfor (const it of $('Video Stats').all()) for (const v of it.json.items || []) stats[v.id] = v.statistics || {};\nconst table = (item) => {\n  const j = item?.json || {};\n  if (!j.columnHeaders) return {};\n  const names = j.columnHeaders.map((c) => c.name);\n  const out = {};\n  for (const row of j.rows || []) { const o = {}; names.forEach((n, i) => { o[n] = row[i]; }); out[o.video] = o; }\n  return out;\n};\nlet an = {};\nlet ctr = {};\ntry { an = table($('Analytics Report').first()); } catch (e) { an = {}; }\ntry { ctr = table($('CTR Report').first()); } catch (e) { ctr = {}; }\n\nconst rows = $('Read Videos').all().map((i) => i.json).filter((r) => r.youtube_id && stats[r.youtube_id]);\nconst now = new Date().toISOString();\nconst items = [];\nconst perVideo = {};\nfor (const r of rows) {\n  const s = stats[r.youtube_id];\n  const a = an[r.youtube_id] || {};\n  const c = ctr[r.youtube_id] || {};\n  const v = {\n    kind: 'video', video_id: r.video_id,\n    views: Number(s.viewCount || 0), likes: Number(s.likeCount || 0), comments: Number(s.commentCount || 0),\n    watch_time_min: a.estimatedMinutesWatched ?? '', avg_view_duration_s: a.averageViewDuration ?? '',\n    avg_view_pct: a.averageViewPercentage ?? '', subs_gained: a.subscribersGained ?? '',\n    impressions: c.videoThumbnailImpressions ?? '', ctr: c.videoThumbnailImpressionsClickRate ?? '',\n    analytics_updated_at: now,\n  };\n  perVideo[r.video_id] = v;\n  items.push({ json: v });\n}\n\nconst median = (arr) => { const s = [...arr].sort((x, y) => x - y); if (!s.length) return 0; const m = Math.floor(s.length / 2); return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };\nconst mature = rows.filter((r) => Date.now() - new Date(r.publish_at || r.upload_date || r.created_at).getTime() > 7 * 86400000);\nconst byCat = {};\nfor (const r of mature) (byCat[r.category] ||= []).push(perVideo[r.video_id]);\nconst all = Object.values(byCat).flat();\nconst medViews = Math.max(1, median(all.map((v) => v.views)));\nconst pcts = all.map((v) => Number(v.avg_view_pct)).filter((n) => n > 0);\nconst avgPct = pcts.length ? pcts.reduce((x, y) => x + y, 0) / pcts.length : 0;\nconst oldW = {};\ntry { for (const i of $('Read Weights').all()) if (i.json.category) oldW[i.json.category] = Number(i.json.weight) || 1; } catch (e) { /* first run */ }\n\nfor (const cat of cfg.categories) {\n  const vids = byCat[cat] || [];\n  let computed = 1.2;\n  let note = 'exploring: fewer than 2 videos older than 7 days';\n  if (vids.length >= 2) {\n    const viewRatio = median(vids.map((v) => v.views)) / medViews;\n    const catPct = vids.map((v) => Number(v.avg_view_pct) || 0).reduce((x, y) => x + y, 0) / vids.length;\n    const retRatio = avgPct ? catPct / avgPct : 1;\n    computed = 0.6 * viewRatio + 0.4 * retRatio;\n    note = `views x${viewRatio.toFixed(2)} vs channel median, retention x${retRatio.toFixed(2)} vs channel average`;\n  }\n  const weight = Math.min(2.5, Math.max(0.5, 0.5 * (oldW[cat] ?? 1) + 0.5 * computed));\n  items.push({ json: { kind: 'weight', category: cat, weight: Math.round(weight * 100) / 100, videos: vids.length, median_views: median(vids.map((v) => v.views)), note, updated_at: now } });\n}\nreturn items;\n"
+      }
+    },
+    {
+      "id": "8e62b96b-d1ac-4397-a8a5-adc7c275b7b4",
+      "name": "Route Rows",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1980,
+        40
+      ],
+      "parameters": {
+        "mode": "expression",
+        "numberOutputs": 2,
+        "output": "={{ $json.kind === 'video' ? 0 : 1 }}"
+      }
+    },
+    {
+      "id": "209268f4-eeaf-4774-bb04-74550fccfe4b",
+      "name": "Update Video Stats",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2200,
+        -60
+      ],
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Analytics Config').first().json.cfg.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Videos",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "video_id": "={{ $json.video_id }}",
+            "views": "={{ $json.views }}",
+            "likes": "={{ $json.likes }}",
+            "comments": "={{ $json.comments }}",
+            "watch_time_min": "={{ $json.watch_time_min }}",
+            "avg_view_duration_s": "={{ $json.avg_view_duration_s }}",
+            "avg_view_pct": "={{ $json.avg_view_pct }}",
+            "subs_gained": "={{ $json.subs_gained }}",
+            "impressions": "={{ $json.impressions }}",
+            "ctr": "={{ $json.ctr }}",
+            "analytics_updated_at": "={{ $json.analytics_updated_at }}"
+          },
+          "matchingColumns": [
+            "video_id"
+          ],
+          "schema": [
+            {
+              "id": "video_id",
+              "displayName": "video_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "views",
+              "displayName": "views",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "likes",
+              "displayName": "likes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "comments",
+              "displayName": "comments",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "watch_time_min",
+              "displayName": "watch_time_min",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "avg_view_duration_s",
+              "displayName": "avg_view_duration_s",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "avg_view_pct",
+              "displayName": "avg_view_pct",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "subs_gained",
+              "displayName": "subs_gained",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "impressions",
+              "displayName": "impressions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ctr",
+              "displayName": "ctr",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "analytics_updated_at",
+              "displayName": "analytics_updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "aa63e2e7-34c6-42df-a45b-5679d403da43",
+      "name": "Upsert Topic Weights",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2200,
+        140
+      ],
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Analytics Config').first().json.cfg.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "TopicWeights",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "category": "={{ $json.category }}",
+            "weight": "={{ $json.weight }}",
+            "videos": "={{ $json.videos }}",
+            "median_views": "={{ $json.median_views }}",
+            "note": "={{ $json.note }}",
+            "updated_at": "={{ $json.updated_at }}"
+          },
+          "matchingColumns": [
+            "category"
+          ],
+          "schema": [
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "weight",
+              "displayName": "weight",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "videos",
+              "displayName": "videos",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "median_views",
+              "displayName": "median_views",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "note",
+              "displayName": "note",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    }
+  ],
+  "connections": {
+    "Weekly": {
+      "main": [
+        [
+          {
+            "node": "Analytics Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Run": {
+      "main": [
+        [
+          {
+            "node": "Analytics Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analytics Config": {
+      "main": [
+        [
+          {
+            "node": "Read Videos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Videos": {
+      "main": [
+        [
+          {
+            "node": "Read Weights",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Weights": {
+      "main": [
+        [
+          {
+            "node": "Build Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Batches": {
+      "main": [
+        [
+          {
+            "node": "Video Stats",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Video Stats": {
+      "main": [
+        [
+          {
+            "node": "Analytics Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analytics Report": {
+      "main": [
+        [
+          {
+            "node": "CTR Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CTR Report": {
+      "main": [
+        [
+          {
+            "node": "Merge & Score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge & Score": {
+      "main": [
+        [
+          {
+            "node": "Route Rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Rows": {
+      "main": [
+        [
+          {
+            "node": "Update Video Stats",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Upsert Topic Weights",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Kolkata",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "active": false
+}

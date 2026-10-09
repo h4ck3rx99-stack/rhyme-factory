@@ -1,0 +1,2292 @@
+{
+  "name": "RF - Main (Idea to YouTube)",
+  "nodes": [
+    {
+      "id": "393191e3-0133-41fd-9a0c-c9760f86007a",
+      "name": "Note 0",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        -340
+      ],
+      "parameters": {
+        "content": "## Rhyme Factory - main pipeline\n1. Set **Config** (sheet id, upload_mode...).\n2. In the five **AI:** nodes pick the workflow *RF - AI Stage*.\n3. Assign credentials (Google Sheets, Rhyme Helper Key, YouTube).\n4. Workflow Settings -> Error workflow = *RF - Error Handler*.\nEvery loop has a hard cap; failures stop at **Stop: Failed** and are logged by the error workflow.",
+        "height": 250,
+        "width": 560,
+        "color": 7
+      }
+    },
+    {
+      "id": "661c25c9-cace-4842-a4f2-1efbfe89ecfa",
+      "name": "Schedule",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -400,
+        -40
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "30 1 * * 1,3,5"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "ece342f8-9610-41de-822d-9120f1c77360",
+      "name": "Manual Run",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        140
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "0802ec9b-78ae-499d-973e-4578d2de8bb6",
+      "name": "Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -160,
+        40
+      ],
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"cfg\": {\n    \"channel_name\": \"Puddlehop Lane\",\n    \"sheet_id\": \"PASTE_YOUR_GOOGLE_SHEET_ID_HERE\",\n    \"helper_url\": \"http://127.0.0.1:8765\",\n    \"gemini_model\": \"gemini-2.5-flash\",\n    \"ollama_url\": \"http://127.0.0.1:11434\",\n    \"ollama_model\": \"qwen3:8b\",\n    \"upload_mode\": \"manual_outbox\",\n    \"publish_time_utc\": \"12:00\",\n    \"publish_days_utc\": [\n      1,\n      3,\n      5\n    ],\n    \"playlist_id\": \"\",\n    \"region_code\": \"IN\",\n    \"category_id\": \"27\",\n    \"language\": \"en\",\n    \"voice\": \"af_heart\",\n    \"target_duration_s\": 150,\n    \"min_duration_s\": 100,\n    \"max_duration_s\": 320,\n    \"min_intelligibility\": 0.55,\n    \"recurring_star_probability\": 0.5,\n    \"max_poll\": 60,\n    \"style_bible\": {\n      \"positive\": \"flat 2D children's picture-book cartoon, thick clean outlines, sunny pastel colors, soft lighting, cute rounded shapes\",\n      \"negative\": \"text, letters, words, numbers, watermark, logo, signature, photorealistic, 3d render, scary, dark, gloomy, horror, blood, weapon, nsfw, nudity, extra limbs, extra fingers, deformed, blurry, low quality, jpeg artifacts, realistic human child\"\n    },\n    \"categories\": [\n      \"animals\",\n      \"counting and numbers\",\n      \"colors and shapes\",\n      \"opposites and sizes\",\n      \"daily routines\",\n      \"feelings and kindness\",\n      \"family and friends\",\n      \"nature and weather\",\n      \"bugs and garden\",\n      \"vehicles and transport\",\n      \"healthy food\",\n      \"alphabet and first words\",\n      \"body and movement\",\n      \"space and sky\",\n      \"ocean animals\",\n      \"music and instruments\"\n    ],\n    \"channel_handle\": \"@PuddlehopLane\",\n    \"world\": \"Puddlehop Lane: a curvy cobblestone lane with round pastel houses, a duck pond with lily pads, a big oak tree with a rope swing, a little red bridge, a park with a yellow slide, and a cosy bakery on the corner\",\n    \"cast\": [\n      {\n        \"char_id\": \"pip_duckling\",\n        \"name\": \"Pip\",\n        \"species\": \"duckling\",\n        \"short_tag\": \"small yellow duckling in sky-blue rain boots\",\n        \"visual_prompt\": \"small round yellow duckling, orange beak and feet, big shiny black eyes, sky-blue rain boots, red polka-dot bandana\",\n        \"personality\": \"curious, brave and giggly; jumps into every adventure first\"\n      },\n      {\n        \"char_id\": \"momo_turtle\",\n        \"name\": \"Momo\",\n        \"species\": \"turtle\",\n        \"short_tag\": \"little green turtle in a striped scarf\",\n        \"visual_prompt\": \"little green turtle, orange-spotted shell, red and white striped scarf, round blue glasses, friendly smile\",\n        \"personality\": \"careful and kind; loves counting and helping friends\"\n      },\n      {\n        \"char_id\": \"bix_bunny\",\n        \"name\": \"Bix\",\n        \"species\": \"bunny\",\n        \"short_tag\": \"lavender bunny in yellow star overalls\",\n        \"visual_prompt\": \"small lavender bunny, one floppy ear, big feet, yellow overalls with a white star pocket, rosy cheeks\",\n        \"personality\": \"bouncy and silly; turns everything into a dance\"\n      },\n      {\n        \"char_id\": \"tula_elephant\",\n        \"name\": \"Tula\",\n        \"species\": \"elephant\",\n        \"short_tag\": \"little pink elephant in a teal raincoat\",\n        \"visual_prompt\": \"little pastel-pink elephant, big round ears, teal raincoat, tiny orange drum on a strap, sparkly eyes\",\n        \"personality\": \"gentle and musical; hums softly and calms everyone down\"\n      }\n    ],\n    \"category_playlist\": {\n      \"animals\": \"Animal Songs on Puddlehop Lane\",\n      \"counting and numbers\": \"Counting Songs for Kids\",\n      \"colors and shapes\": \"Colors, Shapes & Opposites\",\n      \"opposites and sizes\": \"Colors, Shapes & Opposites\",\n      \"daily routines\": \"Bath, Bedtime & Routine Songs\",\n      \"feelings and kindness\": \"Feelings & Friendship Songs\",\n      \"family and friends\": \"Feelings & Friendship Songs\",\n      \"nature and weather\": \"Nature, Weather & Seasons\",\n      \"bugs and garden\": \"Nature, Weather & Seasons\",\n      \"vehicles and transport\": \"Things That Go\",\n      \"healthy food\": \"Yummy Food Songs\",\n      \"alphabet and first words\": \"ABC & First Words\",\n      \"body and movement\": \"Move & Dance Songs\",\n      \"space and sky\": \"Adventure Songs\",\n      \"ocean animals\": \"Adventure Songs\",\n      \"music and instruments\": \"Move & Dance Songs\"\n    },\n    \"playlist_ids\": {\n      \"Animal Songs on Puddlehop Lane\": \"PLNXNYadJTZHM\",\n      \"Counting Songs for Kids\": \"PLfOpglHNO_W4\",\n      \"Colors, Shapes & Opposites\": \"PLUqxNzPodH8U\",\n      \"Bath, Bedtime & Routine Songs\": \"PLU8CDhHh6EF0\",\n      \"Feelings & Friendship Songs\": \"PLLMg7Z3gVR30\",\n      \"Nature, Weather & Seasons\": \"PLa5LJIUoIrms\",\n      \"Things That Go\": \"PLSKb6ARv5QHk\",\n      \"Yummy Food Songs\": \"PLZU8rQ0ExlkI\",\n      \"ABC & First Words\": \"PLPRdcSWhinwg\",\n      \"Move & Dance Songs\": \"PLXhXYGBN3ku8\",\n      \"Adventure Songs\": \"PLe3fYc3G7glM\"\n    },\n    \"title_card_s\": 3.0\n  }\n}",
+        "options": {}
+      }
+    },
+    {
+      "id": "50b0e7cf-2c95-40b9-ac41-453092fbfbcb",
+      "name": "Read History",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        60,
+        40
+      ],
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Config').first().json.cfg.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Videos",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "68988c13-3a71-44bb-bade-90b54d3bd94f",
+      "name": "Read Topic Weights",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        280,
+        40
+      ],
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Config').first().json.cfg.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "TopicWeights",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "fe9804e8-54bd-4248-b789-205c1633069b",
+      "name": "Read Characters",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        500,
+        40
+      ],
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Config').first().json.cfg.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Characters",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "5269b862-36a6-4a55-894d-ae2983ca2fc3",
+      "name": "Plan Run",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        40
+      ],
+      "parameters": {
+        "jsCode": "// PLAN RUN — decides what to make: category (learned weights), recurring star or new character,\n// and what must not be repeated. Returns NO items (= quiet stop) if another video is still in progress.\nconst cfg = $('Config').first().json.cfg;\nconst rows = (node) => {\n  try { return $(node).all().map((i) => i.json).filter((r) => r && Object.keys(r).length); } catch (e) { return []; }\n};\nconst history = rows('Read History').filter((r) => r.video_id);\nconst weightRows = rows('Read Topic Weights').filter((r) => r.category);\nconst stars = rows('Read Characters').filter((r) => r.char_id && String(r.recurring).toLowerCase() === 'yes');\nconst now = new Date();\n\n// 1) Guard against overlapping runs (manual run + schedule, or a slow render)\nconst busy = history.find((r) => ['generating', 'rendering', 'uploading'].includes(r.status) &&\n  now - new Date(r.created_at) < 6 * 3600 * 1000);\nif (busy) return [];\n\n// 2) Category: weighted random using weights written by the Analytics workflow\nconst weights = Object.fromEntries(cfg.categories.map((c) => [c, 1]));\nfor (const r of weightRows) {\n  const w = Number(r.weight);\n  if (r.category in weights && w > 0) weights[r.category] = Math.min(3, Math.max(0.4, w));\n}\nfor (const c of history.slice(-3).map((r) => r.category)) if (c in weights) weights[c] *= 0.35; // variety\nconst learned = weightRows.length > 0;\nconst weightsNote = learned\n  ? Object.entries(weights).sort((a, b) => b[1] - a[1]).map(([c, w]) => `${c} ${w.toFixed(2)}`).join(', ')\n  : '';\nlet roll = Math.random() * Object.values(weights).reduce((a, b) => a + b, 0);\nlet category = cfg.categories[0];\nfor (const [c, w] of Object.entries(weights)) { roll -= w; if (roll <= 0) { category = c; break; } }\n\n// 3) Recurring star (builds a recognisable cast) vs new character; block over-used species\nconst speciesCount = {};\nfor (const r of history.slice(-10)) {\n  const s = String(r.main_species || '').toLowerCase().trim();\n  if (s) speciesCount[s] = (speciesCount[s] || 0) + 1;\n}\nconst bannedSpecies = Object.entries(speciesCount).filter(([, n]) => n >= 3).map(([s]) => s);\nconst recentIds = history.slice(-2).flatMap((r) => String(r.char_ids || '').split(',').map((s) => s.trim()));\nconst eligible = stars.filter((s) => !recentIds.includes(s.char_id));\nlet star = null;\nif (eligible.length && Math.random() < Number(cfg.recurring_star_probability ?? 0.5)) {\n  eligible.sort((a, b) => Number(a.appearances || 0) - Number(b.appearances || 0));\n  const s = eligible[0];\n  star = { char_id: s.char_id, name: s.name, species: s.species, short_tag: s.short_tag, visual_prompt: s.visual_prompt, personality: s.personality || '' };\n}\n\n// 4) Soft avoid-lists for the prompt (hard duplicate checks run after generation)\nconst done = history.filter((r) => r.status !== 'failed');\nconst month = now.toLocaleString('en-US', { month: 'long', timeZone: 'Asia/Kolkata' });\nconst season = ['winter', 'winter', 'spring', 'spring', 'spring', 'summer', 'summer', 'summer', 'autumn', 'autumn', 'autumn', 'winter'][now.getUTCMonth()];\nconst stamp = now.toISOString().slice(0, 10).replace(/-/g, '');\nconst rand = Array.from({ length: 4 }, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random() * 32)]).join('');\n\nconst pkg = {\n  video_id: `NR-${stamp}-${rand}`,\n  exec_id: String($execution.id),\n  started_at: now.toISOString(),\n  cfg,\n  plan: {\n    category, month, season, star,\n    banned_species: bannedSpecies,\n    avoid_titles: done.slice(-60).map((r) => r.title).filter(Boolean),\n    avoid_concepts: done.slice(-40).map((r) => r.concept_keywords).filter(Boolean),\n    target_duration_s: cfg.target_duration_s,\n    weights_note: weightsNote,\n  },\n  hash: {},\n  checks: {},\n  llm_log: [],\n};\nreturn [{ json: { pkg, feedback: '' } }];\n"
+      }
+    },
+    {
+      "id": "1c4245da-5b14-4560-836b-466c2f2c09d8",
+      "name": "Log Start",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        940,
+        40
+      ],
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Config').first().json.cfg.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Videos",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "video_id": "={{ $json.pkg.video_id }}",
+            "exec_id": "={{ $json.pkg.exec_id }}",
+            "status": "generating",
+            "created_at": "={{ $json.pkg.started_at }}",
+            "category": "={{ $json.pkg.plan.category }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "video_id",
+              "displayName": "video_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "exec_id",
+              "displayName": "exec_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "90e72513-64ff-4fc2-bfef-30963fb224e5",
+      "name": "AI: Idea",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1160,
+        40
+      ],
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": "RF - AI Stage"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "stage": "idea",
+            "pkg": "={{ $json.pkg ?? $('Plan Run').first().json.pkg }}",
+            "feedback": "={{ $json.feedback ?? '' }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "stage",
+              "displayName": "stage",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "pkg",
+              "displayName": "pkg",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "feedback",
+              "displayName": "feedback",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      }
+    },
+    {
+      "id": "1da5d97a-4d14-4908-834d-afebe3cf0c3e",
+      "name": "Check Idea",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1380,
+        40
+      ],
+      "parameters": {
+        "jsCode": "// CHECK IDEA — duplicate + originality gate for the concept. Routes: 0 ok, 1 retry, 2 fail.\nconst pkg = JSON.parse(JSON.stringify($input.first().json.pkg));\nconst idea = pkg.idea;\nconst attempt = $runIndex; // how many ideas were already checked in this execution\nconst MAX_RETRIES = 2;\n\nconst STOP = new Set(['the', 'a', 'an', 'and', 'of', 'for', 'to', 'in', 'on', 'with', 'song', 'rhyme', 'nursery', 'kids', 'little', 'my', 'our', 'is', 'are', 'at', 'by']);\nconst norm = (s) => String(s || '').toLowerCase().normalize('NFKD').replace(/[^a-z0-9 ]+/g, ' ').replace(/\\s+/g, ' ').trim();\nconst normTitle = (s) => norm(s).split(' ').filter((w) => w && !STOP.has(w)).join(' ');\nconst grams = (s, n = 3) => { const t = ` ${s} `; const out = new Set(); for (let i = 0; i + n <= t.length; i++) out.add(t.slice(i, i + n)); return out; };\nconst jaccard = (a, b) => { if (!a.size || !b.size) return 0; let n = 0; for (const x of a) if (b.has(x)) n++; return n / (a.size + b.size - n); };\nconst fnv1a = (s) => { let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; } return h.toString(16).padStart(8, '0'); };\nconst kw = (arr) => new Set((arr || []).map((x) => norm(x)).filter(Boolean));\nconst FAMOUS = ['twinkle twinkle', 'wheels on the bus', 'baby shark', 'old macdonald', 'mary had a little lamb', 'humpty dumpty', 'itsy bitsy spider', 'incy wincy', 'row row row your boat', 'jack and jill', 'hickory dickory', 'london bridge', 'baa baa black sheep', 'five little monkeys', 'head shoulders knees', 'happy and you know it', 'johny johny', 'rain rain go away', 'hey diddle diddle', 'little miss muffet', 'pat a cake', 'ring around the rosie', 'this old man', 'farmer in the dell', 'old king cole', 'little bo peep', 'three blind mice', 'hot cross buns', 'ten in the bed', 'five little ducks', 'ants go marching', 'little teapot', 'muffin man', 'pop goes the weasel', 'bluey', 'peppa', 'cocomelon', 'paw patrol', 'pinkfong', 'super simple songs', 'little baby bum', 'blippi', 'disney', 'pixar', 'frozen', 'mickey', 'minnie', 'elsa', 'pokemon', 'pikachu', 'sesame street', 'elmo', 'barney', 'teletubbies', 'spongebob', 'winnie the pooh', 'paddington', 'thomas the tank', 'hello kitty', 'minions', 'gabby'];\n\nlet hist = [];\ntry { hist = $('Read History').all().map((i) => i.json).filter((r) => r.video_id && r.status !== 'failed'); } catch (e) { hist = []; }\nconst problems = [];\nconst tNorm = normTitle(idea.title);\nconst tGrams = grams(tNorm);\nconst kwSet = kw(idea.concept_keywords);\nconst species = norm(idea.main_character?.species);\nconst conceptHash = fnv1a([norm(idea.category), ...[...kwSet].sort(), species].join('|'));\n\nfor (const r of hist) {\n  const rt = String(r.title_norm || normTitle(r.title));\n  if (rt && (rt === tNorm || jaccard(grams(rt), tGrams) >= 0.6)) problems.push(`the title is too similar to our existing video \"${r.title}\"`);\n  if (r.concept_hash && r.concept_hash === conceptHash) problems.push(`the concept is identical to \"${r.title}\"`);\n  const rk = kw(String(r.concept_keywords || '').split(','));\n  if (rk.size >= 3 && norm(r.category) === norm(idea.category) && jaccard(rk, kwSet) >= 0.6) problems.push(`the concept keywords overlap heavily with \"${r.title}\"`);\n}\nconst text = ` ${norm(`${idea.title} ${idea.premise} ${idea.main_character?.name} ${idea.search_phrase}`)} `;\nconst phraseWords = norm(idea.search_phrase).split(' ').filter(Boolean);\nif (phraseWords.length < 2 || phraseWords.length > 6) problems.push('search_phrase must be a real 2-5 word phrase a parent would type');\nfor (const f of FAMOUS) if (text.includes(` ${f} `)) problems.push(`it refers to an existing song or brand (\"${f}\")`);\nif (!idea.main_character?.reuse_star && (pkg.plan.banned_species ?? []).includes(species)) problems.push(`the species \"${species}\" was used too often recently`);\nif (pkg.plan.star && idea.main_character?.reuse_star && norm(idea.main_character.name) !== norm(pkg.plan.star.name)) problems.push(`reuse_star is true but the name is not \"${pkg.plan.star.name}\"`);\nif (!pkg.cfg.categories.includes(idea.category)) idea.category = pkg.plan.category; // auto-fix\n\nconst list = [...new Set(problems)].slice(0, 6);\nconst route = list.length === 0 ? 'ok' : (attempt < MAX_RETRIES ? 'retry' : 'fail');\npkg.hash = { ...pkg.hash, title_norm: tNorm, concept_hash: conceptHash };\npkg.checks.idea = { attempt: attempt + 1, problems: list };\nreturn [{\n  json: {\n    pkg, route, route_index: { ok: 0, retry: 1, fail: 2 }[route],\n    fail_reason: route === 'fail' ? `${pkg.video_id} | idea rejected after ${attempt + 1} attempts: ${list.join('; ')}` : '',\n    feedback: list.length ? `The previous idea \"${idea.title}\" was rejected because ${list.join('; ')}. Propose a clearly different idea.` : '',\n  },\n}];\n"
+      }
+    },
+    {
+      "id": "374998ce-c769-412e-9465-1a610e5edb35",
+      "name": "Idea Route",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1600,
+        40
+      ],
+      "parameters": {
+        "mode": "expression",
+        "numberOutputs": 3,
+        "output": "={{ $json.route_index }}"
+      }
+    },
+    {
+      "id": "b4e11a60-4b3f-43b9-80b5-32e4a633cb03",
+      "name": "AI: Song",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        60,
+        300
+      ],
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": "RF - AI Stage"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "stage": "song",
+            "pkg": "={{ $json.pkg }}",
+            "feedback": "={{ $json.feedback ?? '' }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "stage",
+              "displayName": "stage",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "pkg",
+              "displayName": "pkg",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "feedback",
+              "displayName": "feedback",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      }
+    },
+    {
+      "id": "1511e59e-7e58-41f6-9263-d4f81d05dd88",
+      "name": "Check Song",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        280,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// CHECK SONG — structure, safety words, copying from famous rhymes, near-duplicates of our own songs,\n// character bible clean-up. Auto-fixes small things; routes 0 ok, 1 retry, 2 fail.\nconst pkg = JSON.parse(JSON.stringify($input.first().json.pkg));\nconst song = pkg.song;\nconst attempt = $runIndex; // counts every song check in this execution (incl. QC revisions)\nconst MAX_RUNS = 4;\n\nconst norm = (s) => String(s || '').toLowerCase().normalize('NFKD').replace(/[’']/g, '').replace(/[^a-z0-9 ]+/g, ' ').replace(/\\s+/g, ' ').trim();\nconst ngrams = (s, n) => { const w = norm(s).split(' ').filter(Boolean); const out = new Set(); for (let i = 0; i + n <= w.length; i++) out.add(w.slice(i, i + n).join(' ')); return out; };\nconst jaccard = (a, b) => { if (!a.size || !b.size) return 0; let n = 0; for (const x of a) if (b.has(x)) n++; return n / (a.size + b.size - n); };\nconst fnv1a = (s) => { let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; } return h.toString(16).padStart(8, '0'); };\nconst slug = (s) => norm(s).replace(/ /g, '_').slice(0, 40);\nconst problems = [];\nconst fixes = [];\n\n// --- structure -------------------------------------------------------------\nconst secs = (song.sections || []).filter((s) => Array.isArray(s.lines) && s.lines.some((l) => String(l).trim()));\nconst seenIds = {};\nsecs.forEach((s, i) => {\n  s.lines = s.lines.map((l) => String(l).replace(/\\s+/g, ' ').trim()).filter(Boolean);\n  let id = slug(s.section_id) || `section_${i + 1}`;\n  if (seenIds[id]) { seenIds[id] += 1; id = `${id}_${seenIds[id]}`; fixes.push('renamed duplicate section ids'); } else seenIds[id] = 1;\n  s.section_id = id;\n});\nconst choruses = secs.filter((s) => s.type === 'chorus');\nif (choruses.length < 2) problems.push('the chorus must appear at least twice, identical each time');\nelse {\n  for (const c of choruses.slice(1)) {\n    if (JSON.stringify(c.lines) !== JSON.stringify(choruses[0].lines)) { c.lines = [...choruses[0].lines]; fixes.push('made every chorus identical'); }\n  }\n}\nconst lines = secs.flatMap((s) => s.lines);\nif (lines.length < 16 || lines.length > 40) problems.push(`the song has ${lines.length} lines; write 18-36`);\nconst tooLong = lines.filter((l) => l.split(' ').length > 11);\nif (tooLong.length) problems.push(`these lines are too long to sing (max 9-10 words): ${tooLong.slice(0, 3).map((l) => `\"${l}\"`).join(', ')}`);\n\n// --- toddler-safety vocabulary ------------------------------------------------\nconst BANNED = ['kill', 'killed', 'kills', 'die', 'dies', 'died', 'dead', 'death', 'blood', 'bloody', 'gun', 'guns', 'knife', 'knives', 'sword', 'hate', 'stupid', 'idiot', 'dumb', 'shut up', 'ugly', 'fat', 'beer', 'wine', 'cigarette', 'drunk', 'sexy', 'scary', 'monster', 'ghost', 'devil', 'hell', 'poop', 'fart', 'vomit', 'candy reward'];\nconst hay = ` ${norm(lines.join(' '))} `;\nconst hits = BANNED.filter((w) => hay.includes(` ${w} `));\nif (hits.length) problems.push(`remove words unsuitable for toddlers: ${hits.join(', ')}`);\n\n// --- copying from well-known rhymes (any 4 consecutive words) --------------------\nconst FAMOUS_LINES = ['twinkle twinkle little star how i wonder what you are', 'up above the world so high like a diamond in the sky', 'the wheels on the bus go round and round', 'old macdonald had a farm e i e i o', 'row row row your boat gently down the stream', 'merrily merrily merrily merrily life is but a dream', 'mary had a little lamb its fleece was white as snow', 'humpty dumpty sat on a wall humpty dumpty had a great fall', 'the itsy bitsy spider climbed up the water spout', 'jack and jill went up the hill to fetch a pail of water', 'hickory dickory dock the mouse ran up the clock', 'london bridge is falling down my fair lady', 'baa baa black sheep have you any wool', 'five little monkeys jumping on the bed', 'head shoulders knees and toes', 'if youre happy and you know it clap your hands', 'johny johny yes papa eating sugar no papa', 'rain rain go away come again another day', 'hey diddle diddle the cat and the fiddle the cow jumped over the moon', 'baby shark doo doo doo doo doo doo', 'im a little teapot short and stout', 'the ants go marching one by one hurrah hurrah', 'this old man he played one he played knick knack on my thumb', 'pat a cake pat a cake bakers man', 'ring around the rosie a pocket full of posies', 'three blind mice see how they run', 'hot cross buns one a penny two a penny', 'little bo peep has lost her sheep', 'the farmer in the dell', 'pop goes the weasel', 'do your ears hang low', 'five little ducks went out one day over the hill and far away', 'there were ten in the bed and the little one said roll over', 'do you know the muffin man who lives on drury lane', 'you are my sunshine my only sunshine', 'happy birthday to you', 'the more we get together together together', 'this is the way we wash our hands', 'where is thumbkin where is thumbkin', 'are you sleeping are you sleeping brother john morning bells are ringing', 'one two buckle my shoe three four shut the door', 'the grand old duke of york he had ten thousand men', 'sing a song of sixpence a pocket full of rye', 'polly put the kettle on', 'it is raining it is pouring the old man is snoring', 'teddy bear teddy bear turn around', 'the bear went over the mountain to see what he could see', 'down by the bay where the watermelons grow', 'skinnamarink a dink a dink skinnamarink a doo'];\nconst famous4 = new Set();\nFAMOUS_LINES.forEach((l) => ngrams(l, 4).forEach((g) => famous4.add(g)));\nconst copied = lines.filter((l) => [...ngrams(l, 4)].some((g) => famous4.has(g)));\nif (copied.length) problems.push(`these lines are too close to existing nursery rhymes - rewrite them: ${copied.slice(0, 3).map((l) => `\"${l}\"`).join(', ')}`);\n\n// --- near-identical to our own earlier songs -------------------------------------\nlet hist = [];\ntry { hist = $('Read History').all().map((i) => i.json).filter((r) => r.video_id && r.lyrics && r.status !== 'failed'); } catch (e) { hist = []; }\nconst mine = ngrams(lines.join(' '), 3);\nlet worst = { sim: 0, title: '' };\nfor (const r of hist) {\n  const sim = jaccard(mine, ngrams(String(r.lyrics).replace(/\\[[^\\]]*\\]/g, ' '), 3));\n  if (sim > worst.sim) worst = { sim, title: r.title };\n}\nif (worst.sim >= 0.25) problems.push(`the lyrics are ${Math.round(worst.sim * 100)}% similar to our earlier song \"${worst.title}\" - write new lines`);\n\n// --- character bible -------------------------------------------------------------\nconst FRANCHISE = ['mickey', 'minnie', 'elsa', 'olaf', 'simba', 'nemo', 'dory', 'pooh', 'tigger', 'peppa', 'bluey', 'bingo heeler', 'chase', 'marshall', 'pikachu', 'elmo', 'barney', 'spongebob', 'thomas', 'cocomelon', 'blippi', 'hello kitty', 'paddington', 'shrek', 'minion', 'stitch', 'moana', 'baby shark'];\nlet chars = (song.characters || []).slice(0, 3);\nif (!chars.length) problems.push('define at least one character in the character bible');\nconst usedIds = new Set();\nchars.forEach((c, i) => {\n  let id = slug(c.char_id || c.name) || `char_${i + 1}`;\n  while (usedIds.has(id)) id = `${id}_${i + 1}`;\n  usedIds.add(id);\n  c.char_id = id;\n  if (FRANCHISE.includes(norm(c.name))) problems.push(`the character name \"${c.name}\" belongs to an existing franchise`);\n  const words = String(c.visual_prompt || '').split(/\\s+/);\n  if (words.length > 40) { c.visual_prompt = words.slice(0, 40).join(' '); fixes.push('shortened a visual_prompt'); }\n  if (!c.short_tag) c.short_tag = `${c.species}`;\n  if (!['main', 'friend'].includes(c.role)) c.role = i === 0 ? 'main' : 'friend';\n});\nif (chars.length && !chars.some((c) => c.role === 'main')) chars[0].role = 'main';\nconst star = pkg.plan.star;\nif (star && pkg.idea?.main_character?.reuse_star) { // recurring star: stored bible always wins\n  const idx = chars.findIndex((c) => norm(c.name) === norm(star.name));\n  const fixed = { ...(chars[idx] || {}), char_id: star.char_id, name: star.name, species: star.species, visual_prompt: star.visual_prompt, short_tag: star.short_tag, personality: star.personality || chars[idx]?.personality || '', role: 'main' };\n  if (idx >= 0) chars[idx] = fixed; else chars = [fixed, ...chars].slice(0, 3);\n  chars.forEach((c) => { if (c.char_id !== star.char_id) c.role = 'friend'; });\n  fixes.push('applied the recurring star bible');\n}\nfor (const member of pkg.cfg.cast || []) { // recurring friends also keep their stored bible\n  const idx = chars.findIndex((c) => norm(c.name) === norm(member.name) || c.char_id === member.char_id);\n  if (idx >= 0 && chars[idx].char_id !== star?.char_id) {\n    chars[idx] = { ...chars[idx], char_id: member.char_id, name: member.name, species: member.species, visual_prompt: member.visual_prompt, short_tag: member.short_tag, personality: chars[idx].personality || member.personality };\n    fixes.push(`applied the stored bible for ${member.name}`);\n  }\n}\nsong.sections = secs;\nsong.characters = chars;\n\n// --- music + voice sanity ------------------------------------------------------\nsong.music = song.music || {};\nsong.music.bpm = Math.min(126, Math.max(90, parseInt(song.music.bpm, 10) || 108));\nif (!['3', '4'].includes(String(song.music.time_signature))) song.music.time_signature = '4';\nsong.music.caption = String(song.music.caption || 'cheerful children\\'s song, bright friendly female vocal, ukulele, glockenspiel, hand claps').slice(0, 300);\nsong.voice = song.voice || {};\n\npkg.lyrics_text = secs.map((s) => `[${s.section_id}]\\n${s.lines.join('\\n')}`).join('\\n\\n');\npkg.hash.lyrics_hash = fnv1a(norm(lines.join(' ')));\nconst list = [...new Set(problems)].slice(0, 6);\nconst route = list.length === 0 ? 'ok' : (attempt < MAX_RUNS - 1 ? 'retry' : 'fail');\npkg.checks.song = { attempt: attempt + 1, problems: list, fixes: [...new Set(fixes)], similarity_to_own: Math.round(worst.sim * 100) / 100 };\nreturn [{\n  json: {\n    pkg, route, route_index: { ok: 0, retry: 1, fail: 2 }[route],\n    fail_reason: route === 'fail' ? `${pkg.video_id} | song rejected after ${attempt + 1} checks: ${list.join('; ')}` : '',\n    feedback: list.length ? `Your previous song was rejected. Fix ALL of these and keep everything else that worked:\\n- ${list.join('\\n- ')}` : '',\n  },\n}];\n"
+      }
+    },
+    {
+      "id": "4412852a-38fe-4d95-9614-83f44094ade7",
+      "name": "Song Route",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        500,
+        300
+      ],
+      "parameters": {
+        "mode": "expression",
+        "numberOutputs": 3,
+        "output": "={{ $json.route_index }}"
+      }
+    },
+    {
+      "id": "351154ee-266b-4196-ac32-2c87a845f81f",
+      "name": "AI: Storyboard",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        720,
+        300
+      ],
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": "RF - AI Stage"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "stage": "storyboard",
+            "pkg": "={{ $json.pkg }}",
+            "feedback": "={{ $json.feedback ?? '' }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "stage",
+              "displayName": "stage",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "pkg",
+              "displayName": "pkg",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "feedback",
+              "displayName": "feedback",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      }
+    },
+    {
+      "id": "8a5e2b3f-4303-40bf-8845-3a0ba3fccef1",
+      "name": "Check Storyboard",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        940,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// CHECK STORYBOARD — maps scenes to global lyric lines, enforces coverage + enums, and BUILDS every\n// image prompt from the shared style bible + character bible (deterministic consistency).\nconst pkg = JSON.parse(JSON.stringify($input.first().json.pkg));\nconst sb = pkg.storyboard;\nconst song = pkg.song;\nconst cfg = pkg.cfg;\nconst attempt = $runIndex;\nconst MAX_RUNS = 4;\nconst CAMERA = ['zoom_in', 'zoom_out', 'pan_left', 'pan_right', 'pan_up', 'pan_down', 'static'];\nconst TRANS = ['fade', 'dissolve', 'slideleft', 'slideright', 'wipeleft', 'wiperight', 'circleopen', 'smoothleft', 'smoothright', 'radial'];\nconst SFX = ['splash', 'pop', 'boing', 'chime', 'whoosh', 'giggle', 'clap', 'bell', 'footsteps', 'bird_chirp', 'rain_light', 'wind_soft', 'car_horn_toy', 'train_toot', 'animal_moo', 'animal_quack', 'animal_roar_cute', 'drum_roll', 'ding', 'snore'];\nconst problems = [];\nconst fixes = [];\nconst clean = (s, max = 30) => String(s || '').replace(/[\\r\\n\"]+/g, ' ').replace(/\\s+/g, ' ').trim().split(' ').slice(0, max).join(' ');\n\n// global line index\nconst flat = [];\nconst secIndex = {};\nfor (const s of song.sections) {\n  secIndex[s.section_id] = { start: flat.length, len: s.lines.length };\n  s.lines.forEach((t, li) => flat.push({ gi: flat.length, section_id: s.section_id, li, text: t }));\n}\nconst bible = Object.fromEntries(song.characters.map((c) => [c.char_id, c]));\nconst mainId = (song.characters.find((c) => c.role === 'main') || song.characters[0]).char_id;\n\nlet scenes = [];\nfor (const sc of sb.scenes || []) {\n  const key = Object.keys(secIndex).find((k) => k === sc.section_id) ||\n    Object.keys(secIndex).find((k) => k.replace(/_/g, '') === String(sc.section_id).toLowerCase().replace(/[^a-z0-9]/g, ''));\n  if (!key) { fixes.push('dropped scenes with unknown section ids'); continue; }\n  const sec = secIndex[key];\n  const gl = [...new Set((sc.line_indices || []).map(Number).filter((n) => Number.isInteger(n) && n >= 0 && n < sec.len))]\n    .sort((a, b) => a - b).map((n) => sec.start + n);\n  if (!gl.length) { fixes.push('dropped scenes without valid lines'); continue; }\n  const ids = (sc.char_ids || []).filter((id) => bible[id]).slice(0, 2);\n  if (ids.length !== (sc.char_ids || []).length) fixes.push('removed unknown character ids');\n  scenes.push({\n    lines: gl, char_ids: ids, setting: clean(sc.setting, 18), action: clean(sc.action, 22), expression: clean(sc.expression, 8),\n    framing: ['wide shot', 'medium shot', 'close-up'].includes(sc.framing) ? sc.framing : 'medium shot',\n    camera: CAMERA.includes(sc.camera) ? sc.camera : 'zoom_in',\n    transition: TRANS.includes(sc.transition) ? sc.transition : 'fade',\n    sfx: (sc.sfx || []).filter((f) => SFX.includes(f.name)).slice(0, 1).map((f) => ({ name: f.name, at: f.at === 'middle' ? 'middle' : 'start' })),\n  });\n}\nscenes.sort((a, b) => a.lines[0] - b.lines[0]);\n\n// coverage: every lyric line must be inside some scene\nconst covered = new Set(scenes.flatMap((s) => s.lines));\nconst missing = flat.filter((l) => !covered.has(l.gi)).map((l) => l.gi);\nif (missing.length > Math.max(3, Math.floor(flat.length * 0.2))) {\n  problems.push(`scenes leave ${missing.length} lyric lines uncovered (e.g. section ${flat[missing[0]].section_id} line ${flat[missing[0]].li})`);\n} else if (missing.length && scenes.length) {\n  for (const gi of missing) {\n    const host = [...scenes].reverse().find((s) => s.lines[0] <= gi) || scenes[0];\n    host.lines = [...host.lines, gi].sort((a, b) => a - b);\n  }\n  fixes.push(`attached ${missing.length} uncovered lines to neighbouring scenes`);\n}\nif (scenes.length < 10) problems.push(`only ${scenes.length} usable scenes; make 14-32`);\nif (scenes.length > 40) problems.push(`${scenes.length} scenes is too many; make 14-32`);\nconst withMain = scenes.filter((s) => s.char_ids.includes(mainId)).length;\nif (scenes.length && withMain / scenes.length < 0.4) problems.push('the main character should appear in most scenes');\n\n// prompts: style bible + character short tags + scene description\nconst style = cfg.style_bible.positive;\nconst tags = (ids) => ids.map((id) => bible[id].short_tag).join(' and ');\nconst build = (...parts) => parts.filter((p) => p && String(p).trim()).join(', ').replace(/\\s+/g, ' ');\nscenes = scenes.map((s, i) => ({\n  ...s, scene_id: i + 1,\n  prompt: build(style, s.framing, tags(s.char_ids), s.action, s.expression && `${s.expression} expression`, s.setting),\n}));\nconst card = (c, fallbackAction, extra) => {\n  const ids = ((c && c.char_ids) || []).filter((id) => bible[id]).slice(0, 2);\n  const useIds = ids.length ? ids : [mainId];\n  return { char_ids: useIds, prompt: build(style, 'wide shot', tags(useIds), clean(c?.action, 20) || fallbackAction, clean(c?.setting, 16), extra) };\n};\nconst th = sb.thumbnail || {};\nconst side = th.text_side === 'right' ? 'right' : 'left';\nconst thumbText = clean(String(th.text || song.title).replace(/[^\\p{L}\\p{N}!?' ]/gu, ''), 4);\npkg.render_scenes = scenes;\npkg.cards = {\n  title_card: card(sb.title_card, 'waving hello happily at the viewer', 'empty space at the top of the picture'),\n  outro_card: card(sb.outro_card, 'waving goodbye happily', 'empty space at the top of the picture'),\n  thumbnail: {\n    char_ids: [mainId], text: thumbText, text_side: side,\n    prompt: build(style, 'close-up', tags([mainId]), clean(th.action, 16), `${clean(th.expression, 6) || 'big happy'} expression`,\n      clean(th.background, 10) || 'plain bright sky blue background', `character placed on the ${side === 'left' ? 'right' : 'left'} side`, 'simple composition'),\n  },\n};\nconst list = [...new Set(problems)].slice(0, 6);\nconst route = list.length === 0 ? 'ok' : (attempt < MAX_RUNS - 1 ? 'retry' : 'fail');\npkg.checks.storyboard = { attempt: attempt + 1, problems: list, fixes: [...new Set(fixes)], scenes: scenes.length };\nreturn [{\n  json: {\n    pkg, route, route_index: { ok: 0, retry: 1, fail: 2 }[route],\n    fail_reason: route === 'fail' ? `${pkg.video_id} | storyboard rejected after ${attempt + 1} checks: ${list.join('; ')}` : '',\n    feedback: list.length ? `Your previous storyboard was rejected. Fix ALL of these:\\n- ${list.join('\\n- ')}` : '',\n  },\n}];\n"
+      }
+    },
+    {
+      "id": "59b4e002-ccaf-4e43-9ec9-e755883715a4",
+      "name": "Storyboard Route",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1160,
+        300
+      ],
+      "parameters": {
+        "mode": "expression",
+        "numberOutputs": 3,
+        "output": "={{ $json.route_index }}"
+      }
+    },
+    {
+      "id": "4c7f38e5-5185-4dbd-8c9b-684b45a53789",
+      "name": "AI: Metadata",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1380,
+        300
+      ],
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": "RF - AI Stage"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "stage": "metadata",
+            "pkg": "={{ $json.pkg }}",
+            "feedback": "={{ $json.feedback ?? '' }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "stage",
+              "displayName": "stage",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "pkg",
+              "displayName": "pkg",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "feedback",
+              "displayName": "feedback",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      }
+    },
+    {
+      "id": "980b4a9b-c455-4162-ab75-d9e1c247c5e6",
+      "name": "Check Metadata",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// CHECK METADATA — enforces YouTube limits and honesty rules. Always auto-fixes; never fails.\nconst pkg = JSON.parse(JSON.stringify($input.first().json.pkg));\nconst md = pkg.metadata;\nconst strip = (s) => String(s || '').replace(/[<>]/g, '').replace(/\\s+/g, ' ').trim();\nconst BRANDS = ['cocomelon', 'pinkfong', 'baby shark', 'bluey', 'peppa', 'disney', 'pixar', 'paw patrol', 'super simple', 'little baby bum', 'blippi', 'sesame', 'mickey', 'frozen', 'pokemon', 'chuchu', 'bebefinn', 'masha'];\n\nlet title = strip(md.title);\n// de-shout: words of 4+ letters in ALL CAPS read as clickbait\ntitle = title.split(' ').map((w) => (w.length > 3 && /[A-Z]/.test(w) && w === w.toUpperCase() ? w[0] + w.slice(1).toLowerCase() : w)).join(' ');\ntitle = title.replace(/[!?]{2,}/g, '!');\nif (BRANDS.some((b) => title.toLowerCase().includes(b))) title = pkg.song.title; // never borrow other brands\nconst phrase = String(pkg.idea?.search_phrase || '').trim();\nconst words = (s) => String(s).toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\\s+/).filter((w) => w.length > 2);\nconst pw = words(phrase);\nconst covered = pw.filter((w) => words(title).includes(w)).length;\nif (pw.length && covered / pw.length < 0.6) { // add the searchable phrase if the AI left it out\n  const titleCase = phrase.replace(/\\b\\w/g, (c) => c.toUpperCase());\n  const base = title.split(' | ')[0];\n  if ((base + ' | ' + titleCase).length <= 90) title = `${base} | ${titleCase}`;\n}\nif (title.length > 100) title = title.slice(0, 97).replace(/\\s+\\S*$/, '') + '...';\n\nlet description = String(md.description || '').replace(/[<>]/g, '').replace(/https?:\\/\\/\\S+/g, '').replace(/#\\w+/g, '').trim();\nif (description.length > 2500) description = description.slice(0, 2500).replace(/\\s+\\S*$/, '') + '...';\n\nconst tags = [];\nlet budget = 0; // YouTube: 500 characters for all tags; multi-word tags count their quotes\nfor (const raw of md.tags || []) {\n  const t = strip(raw).toLowerCase().replace(/[,#\"]/g, '');\n  if (!t || t.length > 30 || tags.includes(t) || BRANDS.some((b) => t.includes(b))) continue;\n  const cost = t.length + (t.includes(' ') ? 2 : 0) + 1;\n  if (budget + cost > 450) break;\n  tags.push(t);\n  budget += cost;\n}\nconst hashtags = (md.hashtags || []).map((h) => String(h).replace(/[^A-Za-z0-9]/g, '')).filter((h) => h && !BRANDS.some((b) => h.toLowerCase().includes(b.replace(/ /g, '')))).slice(0, 3);\npkg.metadata_final = { title, description, tags, hashtags };\nreturn [{ json: { pkg, feedback: '' } }];\n"
+      }
+    },
+    {
+      "id": "38b0b68f-c2e8-4c7a-bc33-07b46b5bcc96",
+      "name": "AI: QC Review",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1820,
+        300
+      ],
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": "RF - AI Stage"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "stage": "qc",
+            "pkg": "={{ $json.pkg }}",
+            "feedback": "={{ '' }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "stage",
+              "displayName": "stage",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "pkg",
+              "displayName": "pkg",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "feedback",
+              "displayName": "feedback",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      }
+    },
+    {
+      "id": "38ba393c-a1e7-440c-b9aa-5ba47cc82844",
+      "name": "QC Gate",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2040,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// QC GATE — turns the AI reviewer's scores into a decision.\n// Routes: 0 pass, 1 revise song, 2 revise storyboard, 3 revise metadata, 4 fail. Max 3 review rounds.\nconst pkg = JSON.parse(JSON.stringify($input.first().json.pkg));\nconst qc = pkg.qc;\nconst round = $runIndex; // 0-based review round in this execution\nconst MAX_ROUNDS = 3;\n\nconst scores = qc.scores || {};\nconst values = Object.values(scores).map(Number).filter((n) => !Number.isNaN(n));\nconst core = Object.entries(scores).filter(([k]) => k !== 'algorithm_fit').map(([, v]) => Number(v)).filter((n) => !Number.isNaN(n));\nconst min = core.length ? Math.min(...core) : 0;\nconst algoOk = scores.algorithm_fit === undefined || Number(scores.algorithm_fit) >= 6;\nconst avg = values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0;\nconst blockers = (qc.issues || []).filter((i) => i.severity === 'blocker');\nconst passed = qc.verdict === 'pass' && min >= 7 && algoOk && Number(scores.child_safety) >= 9 && blockers.length === 0 && !qc.resembles_existing_work;\n\nlet route;\nif (passed) route = 'pass';\nelse if (qc.verdict === 'reject' || round >= MAX_ROUNDS - 1) route = 'fail';\nelse {\n  const rank = { blocker: 3, major: 2, minor: 1 };\n  const worst = [...(qc.issues || [])].sort((a, b) => (rank[b.severity] || 0) - (rank[a.severity] || 0))[0];\n  route = worst?.component || { revise_song: 'song', revise_storyboard: 'storyboard', revise_metadata: 'metadata' }[qc.verdict] || 'song';\n  if (qc.resembles_existing_work) route = 'song';\n}\nconst relevant = (qc.issues || []).filter((i) => route === 'song' || i.component === route);\nconst feedback = relevant.length\n  ? `A reviewer found these problems. Fix ALL of them and keep everything else that works:\\n${relevant.map((i) => `- [${i.severity}] ${i.problem} -> fix: ${i.fix}`).join('\\n')}`\n  : '';\npkg.quality_score = Math.round(avg * 10) / 10;\npkg.checks.qc = { round: round + 1, min_score: min, algorithm_fit: scores.algorithm_fit, verdict: qc.verdict, blockers: blockers.length, summary: qc.summary };\nconst failText = blockers.concat(qc.issues || []).slice(0, 3).map((i) => i.problem).join('; ');\nreturn [{\n  json: {\n    pkg, route, feedback,\n    route_index: { pass: 0, song: 1, storyboard: 2, metadata: 3, fail: 4 }[route],\n    fail_reason: route === 'fail' ? `${pkg.video_id} | content QC failed after ${round + 1} review(s): ${failText || qc.summary}` : '',\n  },\n}];\n"
+      }
+    },
+    {
+      "id": "faa46357-4c3f-4c11-abfa-3265fd4ec840",
+      "name": "QC Route",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        2260,
+        300
+      ],
+      "parameters": {
+        "mode": "expression",
+        "numberOutputs": 5,
+        "output": "={{ $json.route_index }}"
+      }
+    },
+    {
+      "id": "49efa21c-0a43-4359-be81-e11a657ea119",
+      "name": "Build Render Job",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        60,
+        600
+      ],
+      "parameters": {
+        "jsCode": "// BUILD RENDER JOB — converts the approved package into the helper's job.json (VIDEO schema).\nconst pkg = JSON.parse(JSON.stringify($input.first().json.pkg));\nconst cfg = pkg.cfg;\nconst song = pkg.song;\nconst fnv1a = (s) => { let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; } return h; };\n\npkg.retry_count = Math.max(0, (pkg.llm_log || []).length - 5); // 5 = one call per stage when nothing fails\nconst job = {\n  video_id: pkg.video_id,\n  channel_name: cfg.channel_name,\n  title: song.title || pkg.idea.title,\n  style_bible: cfg.style_bible,\n  characters: song.characters.map((c) => ({\n    char_id: c.char_id, name: c.name, species: c.species, short_tag: c.short_tag,\n    visual_prompt: c.visual_prompt, seed: fnv1a(c.char_id) % 2147483647,\n  })),\n  song: {\n    sections: song.sections.map((s) => ({ section_id: s.section_id, type: s.type, lines: s.lines })),\n    music: {\n      caption: song.music.caption, bpm: song.music.bpm, key: song.music.key || 'C Major',\n      time_signature: String(song.music.time_signature || '4'), target_duration_s: cfg.target_duration_s,\n    },\n  },\n  voice: { hook_text: song.voice.hook_text, outro_text: song.voice.outro_text, voice: cfg.voice },\n  scenes: pkg.render_scenes.map((s) => ({\n    scene_id: s.scene_id, lines: s.lines, char_ids: s.char_ids, camera: s.camera,\n    transition: s.transition, sfx: s.sfx, prompt: s.prompt,\n  })),\n  title_card: pkg.cards.title_card,\n  outro_card: pkg.cards.outro_card,\n  thumbnail: pkg.cards.thumbnail,\n  render: { width: 1920, height: 1080, fps: 30, transition_s: 0.5, title_card_s: cfg.title_card_s ?? 3.0, outro_s: 5.0, min_duration_s: cfg.min_duration_s, max_duration_s: cfg.max_duration_s },\n  qc: { min_intelligibility: cfg.min_intelligibility, max_song_attempts: 3, max_image_attempts: 2 },\n};\nreturn [{ json: { pkg, job } }];\n"
+      }
+    },
+    {
+      "id": "31a5e295-4f99-4397-afdf-e83f4b3484c1",
+      "name": "Character Rows",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        280,
+        440
+      ],
+      "parameters": {
+        "jsCode": "// CHARACTER ROWS — one item per character for the Characters sheet (recurring cast memory).\nconst { pkg } = $input.first().json;\nconst existing = {};\ntry { for (const i of $('Read Characters').all()) if (i.json.char_id) existing[i.json.char_id] = i.json; } catch (e) { /* empty sheet */ }\nreturn pkg.song.characters.map((c) => {\n  const old = existing[c.char_id] || {};\n  return {\n    json: {\n      char_id: c.char_id, name: c.name, species: c.species, short_tag: c.short_tag,\n      visual_prompt: c.visual_prompt, personality: c.personality || '',\n      recurring: old.recurring || (c.role === 'main' ? 'yes' : 'no'),\n      first_video: old.first_video || pkg.video_id, last_video: pkg.video_id,\n      appearances: Number(old.appearances || 0) + 1,\n    },\n  };\n});\n"
+      }
+    },
+    {
+      "id": "f3cf4e7c-d4d5-4cb6-ab86-283caae4a4ef",
+      "name": "Save Characters",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        500,
+        440
+      ],
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Config').first().json.cfg.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Characters",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "char_id": "={{ $json.char_id }}",
+            "name": "={{ $json.name }}",
+            "species": "={{ $json.species }}",
+            "short_tag": "={{ $json.short_tag }}",
+            "visual_prompt": "={{ $json.visual_prompt }}",
+            "personality": "={{ $json.personality }}",
+            "recurring": "={{ $json.recurring }}",
+            "first_video": "={{ $json.first_video }}",
+            "last_video": "={{ $json.last_video }}",
+            "appearances": "={{ $json.appearances }}"
+          },
+          "matchingColumns": [
+            "char_id"
+          ],
+          "schema": [
+            {
+              "id": "char_id",
+              "displayName": "char_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "species",
+              "displayName": "species",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "short_tag",
+              "displayName": "short_tag",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "visual_prompt",
+              "displayName": "visual_prompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "personality",
+              "displayName": "personality",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "recurring",
+              "displayName": "recurring",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "first_video",
+              "displayName": "first_video",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_video",
+              "displayName": "last_video",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "appearances",
+              "displayName": "appearances",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "1e0389ad-13cd-44f3-9a33-d9a07adb1fbb",
+      "name": "Start Render",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        280,
+        600
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.pkg.cfg.helper_url }}/jobs",
+        "options": {
+          "timeout": 30000
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.job) }}"
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "a59e075c-b846-485e-aeb9-61765d0e1222",
+      "name": "Log Rendering",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        500,
+        600
+      ],
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Config').first().json.cfg.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Videos",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "video_id": "={{ $('Build Render Job').first().json.pkg.video_id }}",
+            "status": "rendering",
+            "title": "={{ $('Build Render Job').first().json.pkg.metadata_final.title }}",
+            "topic": "={{ $('Build Render Job').first().json.pkg.idea.premise }}",
+            "category": "={{ $('Build Render Job').first().json.pkg.idea.category }}",
+            "learning_goal": "={{ $('Build Render Job').first().json.pkg.idea.learning_goal }}",
+            "main_characters": "={{ $('Build Render Job').first().json.pkg.song.characters.map(c => c.name + ' the ' + c.species).join(', ') }}",
+            "main_species": "={{ ($('Build Render Job').first().json.pkg.song.characters.find(c => c.role === 'main') || $('Build Render Job').first().json.pkg.song.characters[0]).species }}",
+            "char_ids": "={{ $('Build Render Job').first().json.pkg.song.characters.map(c => c.char_id).join(',') }}",
+            "concept_keywords": "={{ $('Build Render Job').first().json.pkg.idea.concept_keywords.join(',') }}",
+            "concept_hash": "={{ $('Build Render Job').first().json.pkg.hash.concept_hash }}",
+            "title_norm": "={{ $('Build Render Job').first().json.pkg.hash.title_norm }}",
+            "lyrics": "={{ $('Build Render Job').first().json.pkg.lyrics_text }}",
+            "lyrics_hash": "={{ $('Build Render Job').first().json.pkg.hash.lyrics_hash }}",
+            "quality_score": "={{ $('Build Render Job').first().json.pkg.quality_score }}",
+            "qc_notes": "={{ $('Build Render Job').first().json.pkg.checks.qc.summary }}",
+            "retry_count": "={{ $('Build Render Job').first().json.pkg.retry_count }}",
+            "llm_providers": "={{ [...new Set($('Build Render Job').first().json.pkg.llm_log.map(l => l.provider))].join(',') }}"
+          },
+          "matchingColumns": [
+            "video_id"
+          ],
+          "schema": [
+            {
+              "id": "video_id",
+              "displayName": "video_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "topic",
+              "displayName": "topic",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "learning_goal",
+              "displayName": "learning_goal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "main_characters",
+              "displayName": "main_characters",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "main_species",
+              "displayName": "main_species",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "char_ids",
+              "displayName": "char_ids",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "concept_keywords",
+              "displayName": "concept_keywords",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "concept_hash",
+              "displayName": "concept_hash",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "title_norm",
+              "displayName": "title_norm",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lyrics",
+              "displayName": "lyrics",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lyrics_hash",
+              "displayName": "lyrics_hash",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "quality_score",
+              "displayName": "quality_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "qc_notes",
+              "displayName": "qc_notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "retry_count",
+              "displayName": "retry_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "llm_providers",
+              "displayName": "llm_providers",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "9597b177-b430-4335-a61f-9ab5cc0886ea",
+      "name": "Wait 2 min",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        720,
+        600
+      ],
+      "parameters": {
+        "amount": 2,
+        "unit": "minutes"
+      },
+      "webhookId": "23d1522a-8488-4a3a-977b-7ebb4fbffde6"
+    },
+    {
+      "id": "c6204128-5e59-4f5e-85b4-9b94cd88493a",
+      "name": "Check Render",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        940,
+        600
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $('Build Render Job').first().json.pkg.cfg.helper_url }}/jobs/{{ $('Build Render Job').first().json.pkg.video_id }}",
+        "options": {
+          "timeout": 30000
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "efd122b7-0635-402f-bf99-bedc929362ea",
+      "name": "Render Route",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1160,
+        600
+      ],
+      "parameters": {
+        "mode": "expression",
+        "numberOutputs": 3,
+        "output": "={{ $json.status === 'done' ? 0 : ($json.status === 'failed' || $runIndex >= $('Build Render Job').first().json.pkg.cfg.max_poll) ? 1 : 2 }}"
+      }
+    },
+    {
+      "id": "9dde976c-dff6-4327-81af-edd472c88891",
+      "name": "Media QC Gate",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1380,
+        600
+      ],
+      "parameters": {
+        "jsCode": "// MEDIA QC GATE — stops the run if the helper's file checks failed, then prepares upload metadata\n// (description + chapters + lyrics + disclosure) and the publish slot. Routes: 0 outbox, 1 private, 2 scheduled.\nconst st = $input.first().json; // helper job status\nconst pkg = JSON.parse(JSON.stringify($('Build Render Job').first().json.pkg));\nconst cfg = pkg.cfg;\nif (!st.media_qc || !st.media_qc.pass) {\n  const bad = Object.entries(st.media_qc?.checks || {}).filter(([, v]) => !v.ok).map(([k, v]) => `${k}=${v.value} (expected ${v.expected})`);\n  throw new Error(`${pkg.video_id} | media QC failed: ${bad.join('; ') || st.error || 'no QC result'}`);\n}\nconst md = pkg.metadata_final;\nconst mmss = (t) => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`;\nconst chapters = (st.timeline?.chapters || []).map((c) => `${mmss(c.t)} ${c.label}`).join('\\n');\nconst seenChorus = new Set();\nconst lyrics = pkg.song.sections.map((s) => {\n  if (s.type === 'chorus') {\n    const key = s.lines.join('|');\n    if (seenChorus.has(key)) return '(Chorus)';\n    seenChorus.add(key);\n  }\n  return s.lines.join('\\n');\n}).join('\\n\\n');\nconst disclosure = `${cfg.channel_name} makes original sing-along songs for little ones. The song, lyrics and artwork were created for this channel with the help of AI tools.`;\nlet description = [md.description, chapters && `Chapters:\\n${chapters}`, `Lyrics:\\n${lyrics}`, disclosure, md.hashtags.map((h) => `#${h}`).join(' ')]\n  .filter(Boolean).join('\\n\\n');\nif (description.length > 4500) description = description.slice(0, 4500);\n\n// next publish slot: configured weekday + UTC time, at least 2 hours ahead\nconst [hh, mi] = String(cfg.publish_time_utc || '12:00').split(':').map(Number);\nconst slot = new Date();\nslot.setUTCHours(hh, mi, 0, 0);\nwhile (slot.getTime() < Date.now() + 2 * 3600 * 1000 || !(cfg.publish_days_utc || [1, 3, 5]).includes(slot.getUTCDay())) {\n  slot.setUTCDate(slot.getUTCDate() + 1);\n}\nconst mode = ['manual_outbox', 'api_private', 'api_scheduled'].includes(cfg.upload_mode) ? cfg.upload_mode : 'manual_outbox';\nconst upload = {\n  mode, title: md.title, description, tags: md.tags.join(','),\n  category_id: String(cfg.category_id || '27'), region_code: cfg.region_code || 'IN', language: cfg.language || 'en',\n  publish_at: slot.toISOString(),\n  playlist_id: (cfg.playlist_ids || {})[(cfg.category_playlist || {})[pkg.idea.category]] || cfg.playlist_id || '',\n  playlist_name: (cfg.category_playlist || {})[pkg.idea.category] || '',\n};\nreturn [{\n  json: {\n    pkg, upload,\n    render: {\n      duration_s: st.timeline?.duration_s, video_path: st.paths?.video, thumbnail_path: st.paths?.thumbnail,\n      song_mode: st.song?.mode, intelligibility: st.song?.intelligibility,\n    },\n    route_index: { manual_outbox: 0, api_private: 1, api_scheduled: 2 }[mode],\n  },\n}];\n"
+      }
+    },
+    {
+      "id": "ef9b154f-4093-4376-a2b5-c2437703d18e",
+      "name": "Upload Mode",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1600,
+        600
+      ],
+      "parameters": {
+        "mode": "expression",
+        "numberOutputs": 2,
+        "output": "={{ $json.upload.mode === 'manual_outbox' ? 0 : 1 }}"
+      }
+    },
+    {
+      "id": "7cf1b611-9e1f-4fd3-a449-8d35fef7097d",
+      "name": "Send to Outbox",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1820,
+        440
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.pkg.cfg.helper_url }}/jobs/{{ $json.pkg.video_id }}/outbox",
+        "options": {
+          "timeout": 120000
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ title: $json.upload.title, description: $json.upload.description, tags: $json.upload.tags, publish_suggestion: $json.upload.publish_at, playlist: $json.upload.playlist_name }) }}"
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "d83e8af5-3d00-4f7e-a3f8-27f7ce00d7f2",
+      "name": "Log Ready",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2040,
+        440
+      ],
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Config').first().json.cfg.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Videos",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "video_id": "={{ $('Media QC Gate').first().json.pkg.video_id }}",
+            "status": "ready_for_manual_upload",
+            "render_path": "={{ $json.outbox }}",
+            "thumbnail_path": "={{ $('Media QC Gate').first().json.render.thumbnail_path }}",
+            "duration_s": "={{ $('Media QC Gate').first().json.render.duration_s }}",
+            "song_mode": "={{ $('Media QC Gate').first().json.render.song_mode }}",
+            "intelligibility": "={{ $('Media QC Gate').first().json.render.intelligibility }}",
+            "publish_at": "={{ $('Media QC Gate').first().json.upload.publish_at }}",
+            "generation_time_min": "={{ Math.round((Date.now() - new Date($('Media QC Gate').first().json.pkg.started_at).getTime()) / 60000) }}"
+          },
+          "matchingColumns": [
+            "video_id"
+          ],
+          "schema": [
+            {
+              "id": "video_id",
+              "displayName": "video_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "render_path",
+              "displayName": "render_path",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "thumbnail_path",
+              "displayName": "thumbnail_path",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "duration_s",
+              "displayName": "duration_s",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "song_mode",
+              "displayName": "song_mode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "intelligibility",
+              "displayName": "intelligibility",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "publish_at",
+              "displayName": "publish_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "generation_time_min",
+              "displayName": "generation_time_min",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "bd01d43f-5e8a-4bfe-8b1b-61162627b475",
+      "name": "Download Video",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1820,
+        660
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.pkg.cfg.helper_url }}/files/{{ $json.pkg.video_id }}/final.mp4",
+        "options": {
+          "timeout": 600000,
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "data"
+            }
+          }
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "2d6d16e8-ab5e-4048-bc14-7c42b8fe4437",
+      "name": "Privacy Route",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        2040,
+        660
+      ],
+      "parameters": {
+        "mode": "expression",
+        "numberOutputs": 2,
+        "output": "={{ $('Media QC Gate').first().json.upload.mode === 'api_scheduled' ? 1 : 0 }}"
+      }
+    },
+    {
+      "id": "d98a242d-7f15-4ca0-9af9-d054387c95ae",
+      "name": "Upload (Private)",
+      "type": "n8n-nodes-base.youTube",
+      "typeVersion": 1,
+      "position": [
+        2260,
+        580
+      ],
+      "parameters": {
+        "resource": "video",
+        "operation": "upload",
+        "title": "={{ $('Media QC Gate').first().json.upload.title }}",
+        "regionCode": "={{ $('Media QC Gate').first().json.upload.region_code }}",
+        "categoryId": "={{ $('Media QC Gate').first().json.upload.category_id }}",
+        "binaryProperty": "data",
+        "options": {
+          "description": "={{ $('Media QC Gate').first().json.upload.description }}",
+          "tags": "={{ $('Media QC Gate').first().json.upload.tags }}",
+          "privacyStatus": "private",
+          "selfDeclaredMadeForKids": true,
+          "notifySubscribers": false,
+          "defaultLanguage": "={{ $('Media QC Gate').first().json.upload.language }}",
+          "embeddable": true,
+          "license": "youtube",
+          "publicStatsViewable": true
+        }
+      }
+    },
+    {
+      "id": "f44e24b6-9999-4f86-8a5a-e04a83b8179e",
+      "name": "Upload (Scheduled)",
+      "type": "n8n-nodes-base.youTube",
+      "typeVersion": 1,
+      "position": [
+        2260,
+        740
+      ],
+      "parameters": {
+        "resource": "video",
+        "operation": "upload",
+        "title": "={{ $('Media QC Gate').first().json.upload.title }}",
+        "regionCode": "={{ $('Media QC Gate').first().json.upload.region_code }}",
+        "categoryId": "={{ $('Media QC Gate').first().json.upload.category_id }}",
+        "binaryProperty": "data",
+        "options": {
+          "description": "={{ $('Media QC Gate').first().json.upload.description }}",
+          "tags": "={{ $('Media QC Gate').first().json.upload.tags }}",
+          "privacyStatus": "private",
+          "selfDeclaredMadeForKids": true,
+          "notifySubscribers": false,
+          "defaultLanguage": "={{ $('Media QC Gate').first().json.upload.language }}",
+          "embeddable": true,
+          "license": "youtube",
+          "publicStatsViewable": true,
+          "publishAt": "={{ $('Media QC Gate').first().json.upload.publish_at }}"
+        }
+      }
+    },
+    {
+      "id": "3b830c7d-304a-4bc5-9a86-6df81e1d2bfd",
+      "name": "Upload Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2480,
+        660
+      ],
+      "parameters": {
+        "jsCode": "// UPLOAD RESULT — normalises the YouTube response from either upload node.\nconst yt = $input.first().json;\nconst prev = $('Media QC Gate').first().json;\nif (!yt.id) throw new Error(`${prev.pkg.video_id} | YouTube upload returned no video id: ${JSON.stringify(yt).slice(0, 300)}`);\nreturn [{\n  json: {\n    ...prev,\n    youtube: {\n      id: yt.id,\n      url: `https://www.youtube.com/watch?v=${yt.id}`,\n      privacy: yt.status?.privacyStatus || '',\n      publish_at: yt.status?.publishAt || '',\n      made_for_kids: yt.status?.selfDeclaredMadeForKids ?? true,\n      uploaded_at: new Date().toISOString(),\n    },\n  },\n}];\n"
+      }
+    },
+    {
+      "id": "a2a6259d-63e7-4654-91f7-37c456549563",
+      "name": "Download Thumbnail",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2700,
+        660
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.pkg.cfg.helper_url }}/files/{{ $json.pkg.video_id }}/thumbnail.jpg",
+        "options": {
+          "timeout": 60000,
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "thumb"
+            }
+          }
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "92933457-b608-4a69-a8ed-cffd9f0bde10",
+      "name": "Set Thumbnail",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2920,
+        660
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://www.googleapis.com/upload/youtube/v3/thumbnails/set",
+        "options": {
+          "timeout": 60000
+        },
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "youTubeOAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "videoId",
+              "value": "={{ $('Upload Result').first().json.youtube.id }}"
+            },
+            {
+              "name": "uploadType",
+              "value": "media"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "image/jpeg"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "thumb"
+      },
+      "onError": "continueRegularOutput",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "5b1a23b4-cc98-4187-a33a-58bd2339edf6",
+      "name": "Add to Playlist",
+      "type": "n8n-nodes-base.youTube",
+      "typeVersion": 1,
+      "position": [
+        3140,
+        660
+      ],
+      "parameters": {
+        "resource": "playlistItem",
+        "operation": "add",
+        "playlistId": "={{ $('Upload Result').first().json.upload.playlist_id }}",
+        "videoId": "={{ $('Upload Result').first().json.youtube.id }}",
+        "options": {}
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "4d83b6b6-c2bd-44a0-9f2e-bdac206b3bef",
+      "name": "Log Uploaded",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        3360,
+        660
+      ],
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Config').first().json.cfg.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Videos",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "video_id": "={{ $('Upload Result').first().json.pkg.video_id }}",
+            "status": "={{ $('Upload Result').first().json.upload.mode === 'api_scheduled' ? 'scheduled' : 'uploaded_private' }}",
+            "youtube_id": "={{ $('Upload Result').first().json.youtube.id }}",
+            "youtube_url": "={{ $('Upload Result').first().json.youtube.url }}",
+            "privacy": "={{ $('Upload Result').first().json.youtube.privacy }}",
+            "publish_at": "={{ $('Upload Result').first().json.upload.mode === 'api_scheduled' ? $('Upload Result').first().json.upload.publish_at : '' }}",
+            "upload_date": "={{ $('Upload Result').first().json.youtube.uploaded_at }}",
+            "thumbnail_status": "={{ $('Set Thumbnail').first().json.error ? 'failed: ' + String($('Set Thumbnail').first().json.error.message ?? $('Set Thumbnail').first().json.error).slice(0, 150) : 'ok' }}",
+            "playlist_status": "={{ !$('Upload Result').first().json.upload.playlist_id ? 'skipped' : ($json.error ? 'failed' : 'added') }}",
+            "render_path": "={{ $('Upload Result').first().json.render.video_path }}",
+            "thumbnail_path": "={{ $('Upload Result').first().json.render.thumbnail_path }}",
+            "duration_s": "={{ $('Upload Result').first().json.render.duration_s }}",
+            "song_mode": "={{ $('Upload Result').first().json.render.song_mode }}",
+            "intelligibility": "={{ $('Upload Result').first().json.render.intelligibility }}",
+            "generation_time_min": "={{ Math.round((Date.now() - new Date($('Upload Result').first().json.pkg.started_at).getTime()) / 60000) }}"
+          },
+          "matchingColumns": [
+            "video_id"
+          ],
+          "schema": [
+            {
+              "id": "video_id",
+              "displayName": "video_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "youtube_id",
+              "displayName": "youtube_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "youtube_url",
+              "displayName": "youtube_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "privacy",
+              "displayName": "privacy",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "publish_at",
+              "displayName": "publish_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "upload_date",
+              "displayName": "upload_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "thumbnail_status",
+              "displayName": "thumbnail_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "playlist_status",
+              "displayName": "playlist_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "render_path",
+              "displayName": "render_path",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "thumbnail_path",
+              "displayName": "thumbnail_path",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "duration_s",
+              "displayName": "duration_s",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "song_mode",
+              "displayName": "song_mode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "intelligibility",
+              "displayName": "intelligibility",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "generation_time_min",
+              "displayName": "generation_time_min",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "5160f2f8-5f69-4ac6-b90b-af4892764fc9",
+      "name": "Stop: Failed",
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        1380,
+        820
+      ],
+      "parameters": {
+        "errorMessage": "={{ $json.fail_reason || ($('Build Render Job').isExecuted ? $('Build Render Job').first().json.pkg.video_id + ' | render failed or timed out: ' + ($json.error || $json.status) : 'pipeline stopped') }}"
+      }
+    }
+  ],
+  "connections": {
+    "Schedule": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Run": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Read History",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read History": {
+      "main": [
+        [
+          {
+            "node": "Read Topic Weights",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Topic Weights": {
+      "main": [
+        [
+          {
+            "node": "Read Characters",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Characters": {
+      "main": [
+        [
+          {
+            "node": "Plan Run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Plan Run": {
+      "main": [
+        [
+          {
+            "node": "Log Start",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Start": {
+      "main": [
+        [
+          {
+            "node": "AI: Idea",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI: Idea": {
+      "main": [
+        [
+          {
+            "node": "Check Idea",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Idea": {
+      "main": [
+        [
+          {
+            "node": "Idea Route",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Idea Route": {
+      "main": [
+        [
+          {
+            "node": "AI: Song",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI: Idea",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop: Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI: Song": {
+      "main": [
+        [
+          {
+            "node": "Check Song",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Song": {
+      "main": [
+        [
+          {
+            "node": "Song Route",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Song Route": {
+      "main": [
+        [
+          {
+            "node": "AI: Storyboard",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI: Song",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop: Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI: Storyboard": {
+      "main": [
+        [
+          {
+            "node": "Check Storyboard",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Storyboard": {
+      "main": [
+        [
+          {
+            "node": "Storyboard Route",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Storyboard Route": {
+      "main": [
+        [
+          {
+            "node": "AI: Metadata",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI: Storyboard",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop: Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI: Metadata": {
+      "main": [
+        [
+          {
+            "node": "Check Metadata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Metadata": {
+      "main": [
+        [
+          {
+            "node": "AI: QC Review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI: QC Review": {
+      "main": [
+        [
+          {
+            "node": "QC Gate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "QC Gate": {
+      "main": [
+        [
+          {
+            "node": "QC Route",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "QC Route": {
+      "main": [
+        [
+          {
+            "node": "Build Render Job",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI: Song",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI: Storyboard",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI: Metadata",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop: Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Render Job": {
+      "main": [
+        [
+          {
+            "node": "Character Rows",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Start Render",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Character Rows": {
+      "main": [
+        [
+          {
+            "node": "Save Characters",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start Render": {
+      "main": [
+        [
+          {
+            "node": "Log Rendering",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Rendering": {
+      "main": [
+        [
+          {
+            "node": "Wait 2 min",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 2 min": {
+      "main": [
+        [
+          {
+            "node": "Check Render",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Render": {
+      "main": [
+        [
+          {
+            "node": "Render Route",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Render Route": {
+      "main": [
+        [
+          {
+            "node": "Media QC Gate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop: Failed",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 2 min",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Media QC Gate": {
+      "main": [
+        [
+          {
+            "node": "Upload Mode",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Mode": {
+      "main": [
+        [
+          {
+            "node": "Send to Outbox",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Download Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send to Outbox": {
+      "main": [
+        [
+          {
+            "node": "Log Ready",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Video": {
+      "main": [
+        [
+          {
+            "node": "Privacy Route",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Privacy Route": {
+      "main": [
+        [
+          {
+            "node": "Upload (Private)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Upload (Scheduled)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload (Private)": {
+      "main": [
+        [
+          {
+            "node": "Upload Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload (Scheduled)": {
+      "main": [
+        [
+          {
+            "node": "Upload Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Result": {
+      "main": [
+        [
+          {
+            "node": "Download Thumbnail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Thumbnail": {
+      "main": [
+        [
+          {
+            "node": "Set Thumbnail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Thumbnail": {
+      "main": [
+        [
+          {
+            "node": "Add to Playlist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add to Playlist": {
+      "main": [
+        [
+          {
+            "node": "Log Uploaded",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Kolkata",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "active": false
+}
